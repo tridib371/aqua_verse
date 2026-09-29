@@ -1185,8 +1185,8 @@
                 <path d="M16 12 C19 8, 25 9, 27 15" stroke="currentColor"/>
                 <path d="M18 20 C20 22, 23 25, 21 26 C19 26, 17 24, 18 20 Z" fill="rgba(0, 242, 254, 0.3)"/>
                 <circle cx="11" cy="18" r="1.5" fill="currentColor"/>
-                <path d="M14 13 C15.5 17, 15.5 23, 14 27" stroke="#ffffff" stroke-width="1.8"/>
-                <path d="M22 13 C23.5 17, 23.5 23, 22 27" stroke="#ffffff" stroke-width="1.8"/>
+                <path d="M14 14 C15.5 17, 15.5 23, 14 26" stroke="#ffffff" stroke-width="1.8"/>
+                <path d="M22 14 C23.5 17, 23.5 23, 22 26" stroke="#ffffff" stroke-width="1.8"/>
                 <path d="M29 18 C29.5 19, 29.5 21, 29 22" stroke="#ffffff" stroke-width="1.8"/>
               </svg>
             </div>
@@ -1837,25 +1837,52 @@
         hudStatus: 'SYMBIOSIS: NOMINAL',
         hudDepth: 'DEPTH: 12M // TROPIC',
         svg: `<svg viewBox="0 0 200 160" width="220" height="170" class="anim-clownfish" fill="none">
+          <defs>
+            <clipPath id="clownfish-stripe-clip">
+              <path d="M45 80 C60 45, 115 40, 145 68 C150 75, 150 85, 145 92 C115 120, 60 115, 45 80 Z"/>
+            </clipPath>
+          </defs>
           <!-- Floating Ambient Bubbles -->
           <circle cx="28" cy="70" r="3.5" fill="#00f2fe" opacity="0.75"/>
           <circle cx="20" cy="50" r="2.5" fill="#00f2fe" opacity="0.65"/>
           <circle cx="24" cy="30" r="2" fill="#ffffff" opacity="0.85"/>
           <circle cx="175" cy="50" r="2.5" fill="#00f2fe" opacity="0.7"/>
           <circle cx="185" cy="110" r="3" fill="#38bdf8" opacity="0.6"/>
-          <!-- Fish Body -->
-          <g fill="#ff7a18" stroke="#000000" stroke-width="1.8">
-            <path d="M140 80 C155 60, 175 55, 185 65 C175 80, 175 80, 185 95 C175 105, 155 100, 140 80 Z" class="tail" fill="#ff6b00"/>
-            <path d="M45 80 C60 45, 115 40, 145 68 C150 75, 150 85, 145 92 C115 120, 60 115, 45 80 Z" fill="#ff7a18"/>
-            <path d="M85 45 C100 30, 125 35, 135 60" fill="#ff6b00"/>
-            <path d="M75 80 C85 90, 100 100, 90 105 C80 105, 70 95, 75 80 Z" fill="#ffa94d"/>
-            <circle cx="62" cy="72" r="5.5" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
-            <circle cx="60.5" cy="72" r="2.8" fill="#000000"/>
-            <circle cx="61.5" cy="71" r="1" fill="#ffffff"/>
-            <path d="M72 52 C78 68, 78 92, 72 108" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
-            <path d="M105 45 C110 65, 110 95, 105 115" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
-            <path d="M138 67 C140 73, 140 87, 138 93" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+
+          <!-- Fins behind body -->
+          <!-- Dorsal Fin -->
+          <path d="M85 45 C100 28, 125 32, 135 60 C120 54, 98 48, 85 45 Z" fill="#ff6b00" stroke="#000000" stroke-width="1.8"/>
+          <!-- Tail / Caudal Fin -->
+          <path d="M140 80 C155 60, 175 55, 185 65 C175 80, 175 80, 185 95 C175 105, 155 100, 140 80 Z" class="tail" fill="#ff6b00" stroke="#000000" stroke-width="1.8"/>
+
+          <!-- Fish Body Base Fill -->
+          <path d="M45 80 C60 45, 115 40, 145 68 C150 75, 150 85, 145 92 C115 120, 60 115, 45 80 Z" fill="#ff7a18"/>
+
+          <!-- Iconic White Stripes (Cleanly clipped inside body with black edges) -->
+          <g clip-path="url(#clownfish-stripe-clip)">
+            <!-- Head Stripe -->
+            <path d="M72 40 C78 68, 78 92, 72 120" stroke="#000000" stroke-width="10" fill="none"/>
+            <path d="M72 40 C78 68, 78 92, 72 120" stroke="#ffffff" stroke-width="7" fill="none"/>
+
+            <!-- Mid-body Stripe -->
+            <path d="M106 35 C111 65, 111 95, 106 125" stroke="#000000" stroke-width="9" fill="none"/>
+            <path d="M106 35 C111 65, 111 95, 106 125" stroke="#ffffff" stroke-width="6" fill="none"/>
+
+            <!-- Tail-base Stripe -->
+            <path d="M138 55 C140 73, 140 87, 138 105" stroke="#000000" stroke-width="7" fill="none"/>
+            <path d="M138 55 C140 73, 140 87, 138 105" stroke="#ffffff" stroke-width="4.5" fill="none"/>
           </g>
+
+          <!-- Outer Body Stroke (Drawn on top so boundary is crisp & seamless) -->
+          <path d="M45 80 C60 45, 115 40, 145 68 C150 75, 150 85, 145 92 C115 120, 60 115, 45 80 Z" fill="none" stroke="#000000" stroke-width="2"/>
+
+          <!-- Pectoral Fin -->
+          <path d="M75 80 C85 90, 100 100, 90 105 C80 105, 70 95, 75 80 Z" fill="#ffa94d" stroke="#000000" stroke-width="1.8"/>
+
+          <!-- Expressive Realistic Eye -->
+          <circle cx="62" cy="72" r="5.5" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
+          <circle cx="60.5" cy="72" r="2.8" fill="#000000"/>
+          <circle cx="61.5" cy="71" r="1" fill="#ffffff"/>
         </svg>`
       },
       turtle: {
