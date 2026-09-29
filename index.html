@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AquaVerse – Underwater World</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cyan-glow: #00f2fe;
+      --blue-accent: #0ea5e9;
+      --teal-accent: #14b8a6;
+      --deep-bg: #030814;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      background-color: var(--deep-bg);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      background-color: var(--deep-bg);
+      overflow-x: hidden;
+      min-height: 100%;
+      position: relative;
+    }
+
+    /* Fixed full-screen 3D video sequence canvas */
+    #canvas-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Ambient lighting overlay */
+    #ambient-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: radial-gradient(circle at 50% 30%, rgba(0, 242, 254, 0.04) 0%, rgba(3, 8, 20, 0.25) 50%, rgba(2, 4, 10, 0.75) 100%);
+      transition: background 1.2s ease;
+    }
+
+    /* Ambient floating bubbles */
+    #bubble-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Navigation Bar - Spans full width with outside widgets and inside writings */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 76px;
+      display: flex;
+      align-items: center;
+      z-index: 50;
+      background: linear-gradient(180deg, rgba(3, 8, 20, 0.9) 0%, rgba(3, 8, 20, 0.35) 60%, rgba(3, 8, 20, 0) 100%);
+      pointer-events: none;
+    }
+
+    .navbar a,
+    .navbar button,
+    .navbar div,
+    .navbar span {
+      pointer-events: auto;
+    }
+
+    /* 1. Earth logo: centered in the left black margin */
+    .brand-icon {
+      position: absolute;
+      left: max(20px, calc(var(--video-offset-left, 0px) / 2 - 16px));
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan-glow), var(--blue-accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+      flex-shrink: 0;
+      text-decoration: none;
+      transition: left 0.2s ease, transform 0.3s ease;
+    }
+
+    .brand-icon:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 30px rgba(0, 242, 254, 0.8);
+    }
+
+    .brand-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
+    }
+
+    /* 2. AquaVerse word: starts cleanly inside the video frame on the left */
+    .brand-title {
+      position: absolute;
+      left: calc(var(--video-offset-left, 0px) + 24px);
+      font-family: 'Cinzel', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: #fff;
+      text-shadow: 0 0 24px rgba(0, 242, 254, 0.6);
+      white-space: nowrap;
+      transition: left 0.2s ease;
+      user-select: none;
+    }
+
+    /* 3. Depth HUD: High-Contrast Submarine Telemetry Capsule */
+    .depth-hud {
+      position: absolute;
+      right: calc(var(--video-offset-left, 0px) + 24px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: #ffffff;
+      font-family: monospace;
+      background: rgba(3, 14, 33, 0.88);
+      border: 1px solid rgba(0, 242, 254, 0.6);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 22px rgba(0, 242, 254, 0.35), inset 0 0 10px rgba(0, 242, 254, 0.12), 0 4px 16px rgba(0, 0, 0, 0.8);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+      white-space: nowrap;
+      transition: right 0.2s ease;
+      user-select: none;
+    }
+
+    .depth-hud .depth-meters {
+      color: #00f2fe;
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.85);
+      font-weight: 700;
+    }
+
+    .depth-hud .depth-sep {
+      color: rgba(255, 255, 255, 0.45);
+      margin: 0 2px;
+    }
+
+    .depth-hud .depth-zone {
+      color: #ffffff;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+
+
+
+    /* 4. Sound Toggle Button: Pure circular icon button centered in the right black margin */
+    .audio-btn {
+      position: absolute;
+      right: max(22px, calc(var(--video-offset-left, 0px) / 2 - 18px));
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.45);
+      color: var(--cyan-glow);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.25);
+      flex-shrink: 0;
+      padding: 0;
+    }
+
+    .audio-btn:hover {
+      background: rgba(0, 242, 254, 0.25);
+      border-color: var(--cyan-glow);
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
+    }
+
+    .audio-btn .audio-icon {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      display: none;
+      transition: all 0.2s ease;
+    }
+
+    /* Sound Muted icon shown when paused */
+    .audio-btn .audio-icon-muted {
+      display: block;
+    }
+
+    /* Sound Playing icon shown when active */
+    .audio-btn.playing {
+      background: rgba(0, 242, 254, 0.22);
+      border-color: var(--cyan-glow);
+      box-shadow: 0 0 24px rgba(0, 242, 254, 0.55);
+    }
+
+    .audio-btn.playing .audio-icon-muted {
+      display: none;
+    }
+
+    .audio-btn.playing .audio-icon-on {
+      display: block;
+      animation: soundPulse 1.8s infinite ease-in-out;
+    }
+
+    @keyframes soundPulse {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--cyan-glow)); }
+      50% { transform: scale(1.08); filter: drop-shadow(0 0 8px var(--cyan-glow)); }
+    }
+
+    /* Fixed Vertical Depth Track - centered in the right black margin */
+    .depth-gauge {
+      position: fixed;
+      right: max(20px, calc(var(--video-offset-left, 0px) / 2 - 1px));
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+      transition: right 0.2s ease;
+    }
+
+    .gauge-track {
+      width: 2px;
+      height: 180px;
+      background: linear-gradient(180deg, rgba(0, 242, 254, 0.45) 0%, rgba(255, 255, 255, 0.35) 50%, rgba(0, 242, 254, 0.35) 100%);
+      box-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+      position: relative;
+      border-radius: 999px;
+    }
+
+    /* Pure Glowing Triangle Arrow - Bigger & Exactly Centered in the Middle of the Vertical Line */
+    .gauge-thumb {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 24px;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: top 0.08s linear;
+      pointer-events: none;
+    }
+
+    .gauge-thumb svg {
+      width: 24px;
+      height: 24px;
+      display: block;
+      fill: var(--cyan-glow);
+      filter: drop-shadow(0 0 6px var(--cyan-glow)) drop-shadow(0 0 16px rgba(0, 242, 254, 1));
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-origin: 50% 50%;
+    }
+
+    .gauge-thumb.direction-up svg {
+      transform: rotate(180deg);
+    }
+
+    .gauge-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      color: #ffffff;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(0, 242, 254, 0.7), 0 2px 4px rgba(0, 0, 0, 0.9);
+      writing-mode: vertical-rl;
+      text-transform: uppercase;
+      font-family: monospace;
+    }
+
+    /* Top progress bar */
+    #progress-line {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      width: 0%;
+      background: linear-gradient(90deg, #00f2fe, #38bdf8, #818cf8, #c084fc);
+      z-index: 99;
+      pointer-events: none;
+      transition: width 0.05s linear;
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.8);
+    }
+
+    /* Main Content Container */
+    #content-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+    }
+
+    /* Section Stage (Direct Floating Cinematic Text) */
+    .section-stage {
+      min-height: 115vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 32px;
+      position: relative;
+    }
+
+    .content-box {
+      max-width: 950px;
+      margin: 0 auto;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(35px) scale(0.97);
+      transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .content-box.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #00f2fe;
+      background: rgba(3, 14, 33, 0.82);
+      border: 1px solid rgba(0, 242, 254, 0.6);
+      padding: 7px 22px;
+      border-radius: 9999px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 24px rgba(0, 242, 254, 0.35), inset 0 0 10px rgba(0, 242, 254, 0.12), 0 4px 16px rgba(0, 0, 0, 0.75);
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.9);
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.4rem, 6vw, 4.8rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      color: #ffffff;
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 1), 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 45px rgba(0, 242, 254, 0.45);
+    }
+
+    .section-desc {
+      font-size: clamp(1.1rem, 1.8vw, 1.35rem);
+      line-height: 1.85;
+      color: #e0f2fe;
+      max-width: 780px;
+      margin: 0 auto 36px;
+      font-weight: 450;
+      letter-spacing: 0.015em;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 1), 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 35px rgba(3, 14, 33, 0.9);
+      background: radial-gradient(ellipse at center, rgba(3, 10, 25, 0.72) 0%, rgba(3, 10, 25, 0) 78%);
+      padding: 14px 28px;
+      border-radius: 20px;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 40px;
+      border-radius: 9999px;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #030814;
+      background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 100%);
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 0 35px rgba(0, 242, 254, 0.6), 0 10px 25px rgba(0, 0, 0, 0.7);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 0 55px rgba(0, 242, 254, 0.9), 0 15px 35px rgba(0, 0, 0, 0.8);
+      background: linear-gradient(135deg, #38bdf8 0%, #00f2fe 100%);
+    }
+
+    /* Section 4: Ocean Life (Pure Direct Text Layout) */
+    .creatures-list {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      max-width: 820px;
+      margin: 44px auto 0;
+      text-align: left;
+    }
+
+    .creature-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 22px;
+      padding: 14px 0;
+      background: transparent;
+      border-bottom: 1px solid rgba(0, 242, 254, 0.18);
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .creature-row:hover {
+      transform: translateX(10px);
+      border-bottom-color: var(--cyan-glow);
+    }
+
+    .creature-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.65));
+      flex-shrink: 0;
+      color: var(--cyan-glow);
+      transition: transform 0.3s ease, filter 0.3s ease;
+      margin-top: 2px;
+    }
+
+    .creature-row:hover .creature-icon {
+      transform: scale(1.15) rotate(3deg);
+      filter: drop-shadow(0 0 16px rgba(0, 242, 254, 0.95));
+      color: #fff;
+    }
+
+    .creature-icon svg {
+      width: 38px;
+      height: 38px;
+    }
+
+    .creature-info {
+      flex: 1;
+    }
+
+    .creature-name {
+      font-family: 'Cinzel', serif;
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+      margin-bottom: 6px;
+      text-shadow: 0 0 10px #000000, 0 2px 4px #000000, 0 4px 16px rgba(0, 0, 0, 0.95), 0 0 30px rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .creature-role {
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #00f2fe;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 242, 254, 0.55);
+      padding: 3px 12px;
+      border-radius: 20px;
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.9), 0 1px 4px #000000;
+      box-shadow: 0 0 14px rgba(0, 242, 254, 0.25);
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .creature-desc {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: #ffffff;
+      font-weight: 500;
+      text-shadow: 0 0 10px #000000, 0 2px 5px #000000, 0 3px 14px rgba(0, 0, 0, 0.95);
+    }
+
+    .creature-dossier-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 6px 16px;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.45);
+      border-radius: 999px;
+      color: #00f2fe;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    }
+
+    .creature-dossier-btn:hover {
+      background: rgba(0, 242, 254, 0.25);
+      border-color: #00f2fe;
+      color: #ffffff;
+      transform: translateX(4px);
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.5), 0 4px 12px rgba(0, 0, 0, 0.8);
+    }
+
+    .creature-dossier-btn svg {
+      transition: transform 0.25s ease;
+    }
+
+    .creature-dossier-btn:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* SPECIES DOSSIER MODAL */
+    .dossier-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(1, 6, 16, 0.9);
+      backdrop-filter: blur(24px);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .dossier-modal-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .dossier-modal-dialog {
+      width: 100%;
+      max-width: 960px;
+      max-height: 90vh;
+      background: radial-gradient(ellipse at 50% 0%, #0d284a 0%, #030b17 100%);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      border-radius: 20px;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.95), 0 0 60px rgba(0, 242, 254, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.95) translateY(15px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .dossier-modal-backdrop.show .dossier-modal-dialog {
+      transform: scale(1) translateY(0);
+    }
+
+    .dossier-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+      background: rgba(2, 8, 20, 0.6);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .dossier-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 0;
+    }
+
+    .dossier-tab-btn {
+      background: rgba(0, 242, 254, 0.06);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      color: #94a3b8;
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .dossier-tab-btn:hover {
+      color: #fff;
+      border-color: rgba(0, 242, 254, 0.5);
+      background: rgba(0, 242, 254, 0.15);
+    }
+
+    .dossier-tab-btn.active {
+      color: #00f2fe;
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.22);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+    }
+
+    .dossier-close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .dossier-close-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+      transform: rotate(90deg);
+    }
+
+    .dossier-body {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      overflow-y: auto;
+      flex: 1;
+      padding: 24px;
+      gap: 28px;
+    }
+
+    @media (max-width: 820px) {
+      .dossier-body {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 16px;
+      }
+    }
+
+    /* ANIMATED SPECIMEN CHAMBER */
+    .specimen-chamber {
+      background: radial-gradient(circle at 50% 30%, #06223e 0%, #010915 90%);
+      border: 1px solid rgba(0, 242, 254, 0.35);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      min-height: 360px;
+      box-shadow: inset 0 0 40px rgba(0, 242, 254, 0.15);
+    }
+
+    .chamber-water-fx {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0, 242, 254, 0.08) 0%, transparent 60%),
+                  radial-gradient(ellipse at 50% 10%, rgba(0, 242, 254, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .chamber-viewport {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 240px;
+    }
+
+    .chamber-hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: rgba(0, 242, 254, 0.8);
+      border-top: 1px solid rgba(0, 242, 254, 0.2);
+      padding-top: 12px;
+      margin-top: 12px;
+      letter-spacing: 0.08em;
+    }
+
+    /* CREATURE SPECIFIC ANIMATIONS */
+    .anim-clownfish {
+      animation: clownfishSwim 4s ease-in-out infinite alternate;
+      transform-origin: center;
+    }
+    @keyframes clownfishSwim {
+      0% { transform: translate(-12px, 4px) rotate(-3deg); }
+      50% { transform: translate(14px, -6px) rotate(4deg); }
+      100% { transform: translate(-8px, 6px) rotate(-2deg); }
+    }
+    .anim-clownfish .tail {
+      animation: fishTailWiggle 0.6s ease-in-out infinite alternate;
+      transform-origin: 140px 80px;
+    }
+    @keyframes fishTailWiggle {
+      0% { transform: rotate(-10deg); }
+      100% { transform: rotate(10deg); }
+    }
+    .anemone-tentacles path {
+      animation: anemoneSway 3s ease-in-out infinite alternate;
+      transform-origin: bottom center;
+    }
+    @keyframes anemoneSway {
+      0% { transform: rotate(-6deg); }
+      100% { transform: rotate(6deg); }
+    }
+
+    .anim-turtle {
+      animation: turtleGlide 5s ease-in-out infinite alternate;
+      transform-origin: center;
+    }
+    @keyframes turtleGlide {
+      0% { transform: translateY(8px) rotate(-2deg); }
+      50% { transform: translateY(-8px) rotate(2deg); }
+      100% { transform: translateY(6px) rotate(-1deg); }
+    }
+    .anim-turtle .flipper-l {
+      animation: turtleFlipperL 2.2s ease-in-out infinite alternate;
+      transform-origin: 70px 70px;
+    }
+    .anim-turtle .flipper-r {
+      animation: turtleFlipperR 2.2s ease-in-out infinite alternate;
+      transform-origin: 130px 70px;
+    }
+    @keyframes turtleFlipperL {
+      0% { transform: rotate(-18deg) scaleY(0.9); }
+      100% { transform: rotate(14deg) scaleY(1.1); }
+    }
+    @keyframes turtleFlipperR {
+      0% { transform: rotate(18deg) scaleY(0.9); }
+      100% { transform: rotate(-14deg) scaleY(1.1); }
+    }
+
+    .anim-manta {
+      animation: mantaSoar 6s ease-in-out infinite alternate;
+      transform-origin: center;
+    }
+    @keyframes mantaSoar {
+      0% { transform: translateY(10px) scale(0.96); }
+      50% { transform: translateY(-12px) scale(1.04); }
+      100% { transform: translateY(8px) scale(0.98); }
+    }
+    .anim-manta .manta-wings {
+      animation: mantaWingWave 2.4s ease-in-out infinite alternate;
+      transform-origin: 100px 100px;
+    }
+    @keyframes mantaWingWave {
+      0% { transform: scaleX(0.92) scaleY(1.08); }
+      100% { transform: scaleX(1.06) scaleY(0.92); }
+    }
+
+    .anim-shark {
+      animation: sharkPatrol 4.5s ease-in-out infinite alternate;
+      transform-origin: center;
+    }
+    @keyframes sharkPatrol {
+      0% { transform: translate(-14px, -4px) rotate(-2deg); }
+      50% { transform: translate(14px, 4px) rotate(2deg); }
+      100% { transform: translate(-10px, 0px) rotate(-1deg); }
+    }
+    .anim-shark .shark-tail {
+      animation: sharkTailPropel 0.8s ease-in-out infinite alternate;
+      transform-origin: 170px 80px;
+    }
+    @keyframes sharkTailPropel {
+      0% { transform: rotate(-14deg); }
+      100% { transform: rotate(14deg); }
+    }
+
+    .anim-jellyfish {
+      animation: jellyPropel 3.2s ease-in-out infinite;
+      transform-origin: center top;
+    }
+    @keyframes jellyPropel {
+      0% { transform: translateY(16px) scale(1, 0.88); filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.6)); }
+      35% { transform: translateY(-16px) scale(0.88, 1.15); filter: drop-shadow(0 0 26px rgba(168, 85, 247, 0.9)); }
+      70% { transform: translateY(4px) scale(1.05, 0.95); filter: drop-shadow(0 0 18px rgba(0, 242, 254, 0.7)); }
+      100% { transform: translateY(16px) scale(1, 0.88); filter: drop-shadow(0 0 12px rgba(0, 242, 254, 0.6)); }
+    }
+    .anim-jellyfish .tentacle-flow {
+      animation: tentacleWave 2s ease-in-out infinite alternate;
+      transform-origin: 100px 95px;
+    }
+    @keyframes tentacleWave {
+      0% { transform: rotate(-4deg) skewX(-4deg); }
+      100% { transform: rotate(4deg) skewX(4deg); }
+    }
+
+    /* RIGHT COLUMN: DETAILS DOSSIER */
+    .dossier-details {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .dossier-name-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .dossier-species-title {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 0;
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+    }
+
+    .dossier-latin-name {
+      font-style: italic;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    .dossier-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 12px;
+      border-radius: 999px;
+      background: rgba(0, 242, 254, 0.15);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      color: #00f2fe;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: monospace;
+    }
+
+    .dossier-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .dossier-metric-card {
+      background: rgba(2, 10, 24, 0.6);
+      border: 1px solid rgba(0, 242, 254, 0.18);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+
+    .dossier-metric-label {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-family: monospace;
+      margin-bottom: 2px;
+    }
+
+    .dossier-metric-val {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .dossier-section {
+      background: rgba(2, 10, 24, 0.45);
+      border-left: 3px solid #00f2fe;
+      padding: 10px 16px;
+      border-radius: 0 10px 10px 0;
+    }
+
+    .dossier-section-title {
+      font-size: 0.8rem;
+      color: #00f2fe;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-family: monospace;
+    }
+
+    .dossier-section-text {
+      color: #e2e8f0;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .dossier-telemetry-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .telemetry-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      font-family: monospace;
+    }
+
+    .telemetry-label {
+      width: 130px;
+      flex-shrink: 0;
+    }
+
+    .telemetry-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .telemetry-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00f2fe, #38bdf8);
+      border-radius: 999px;
+      box-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .telemetry-val {
+      width: 36px;
+      text-align: right;
+      color: #00f2fe;
+      font-weight: 700;
+    }
+
+    .dossier-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      border-top: 1px solid rgba(0, 242, 254, 0.2);
+      background: rgba(2, 8, 20, 0.7);
+    }
+
+    /* Modal for Action */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 16, 0.85);
+      backdrop-filter: blur(20px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 24px;
+    }
+
+    .modal-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-dialog {
+      background: radial-gradient(circle at 50% 0%, #0c233f 0%, #040d1a 100%);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      border-radius: 24px;
+      padding: 44px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 242, 254, 0.3);
+    }
+
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.9rem;
+      color: #fff;
+      margin-bottom: 14px;
+      text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+    }
+
+    .modal-text {
+      color: #cbd5e1;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        height: 64px;
+      }
+      .brand-icon {
+        left: 16px;
+      }
+      .brand-title {
+        left: 56px;
+        font-size: 1.1rem;
+      }
+      .depth-hud {
+        display: none;
+      }
+      .audio-btn {
+        right: 16px;
+        max-width: none;
+      }
+      .depth-gauge {
+        display: none;
+      }
+      .section-stage {
+        padding: 80px 20px;
+      }
+      .creature-row {
+        gap: 16px;
+      }
+      .creature-icon {
+        font-size: 1.8rem;
+      }
+      .creature-name {
+        font-size: 1.25rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Embedded High-Definition Studio Underwater Audio -->
+  <audio id="ambient-audio" loop preload="auto" src="audio.mp3"></audio>
+
+  <!-- Top scrub indicator -->
+  <div id="progress-line"></div>
+
+  <!-- Ambient lighting overlay -->
+  <div id="ambient-overlay"></div>
+
+  <!-- Ambient bubbles -->
+  <canvas id="bubble-canvas"></canvas>
+
+  <!-- 3D Video Frame Canvas (480 Frames) -->
+  <div id="canvas-container">
+    <canvas id="hero-canvas"></canvas>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="#" class="brand-icon" title="AquaVerse">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+    </a>
+    <span class="brand-title">AquaVerse</span>
+
+    <div class="depth-hud">
+      <span id="depth-readout"><span class="depth-meters">0M</span> <span class="depth-sep">&bull;</span> <span class="depth-zone">SURFACE</span></span>
+    </div>
+
+    <button class="audio-btn" id="audio-toggle" title="Play Sound" aria-label="Toggle Sound">
+      <!-- Muted (Sound Off) Icon -->
+      <svg class="audio-icon audio-icon-muted" viewBox="0 0 24 24">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/>
+        <line x1="22" y1="9" x2="16" y2="15"/>
+        <line x1="16" y1="9" x2="22" y2="15"/>
+      </svg>
+      <!-- Sound On Icon with sound waves -->
+      <svg class="audio-icon audio-icon-on" viewBox="0 0 24 24">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Fixed Vertical Depth Gauge -->
+  <aside class="depth-gauge" aria-hidden="true">
+    <span class="gauge-label">Depth</span>
+    <div class="gauge-track">
+      <div class="gauge-thumb" id="gauge-thumb">
+        <svg viewBox="0 0 24 24"><polygon points="12,20 3,4 21,4"/></svg>
+      </div>
+    </div>
+    <span class="gauge-label" id="gauge-depth-val">0m</span>
+  </aside>
+
+  <!-- Main Content Flow (Pure Direct Cinematic Typography) -->
+  <main id="content-container">
+
+    <!-- 1. HERO — "ENTER THE BLUE" -->
+    <section class="section-stage" id="section-hero">
+      <div class="content-box active">
+        <span class="section-tag">Prologue &bull; Depth 0m</span>
+        <h1 class="section-title">ENTER THE BLUE</h1>
+        <p class="section-desc">Dive beneath the surface and discover a world hidden beneath the waves.</p>
+        <button class="btn-primary" onclick="startExperience()">
+          <span>Start Exploring</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. THE JOURNEY BEGINS -->
+    <section class="section-stage" id="section-journey">
+      <div class="content-box">
+        <span class="section-tag">The Descent Begins &bull; 50m</span>
+        <h2 class="section-title">A WORLD BENEATH THE WAVES</h2>
+        <p class="section-desc">
+          Beyond the ocean surface lies a fascinating world filled with life, color, and mystery. Every layer of the ocean reveals something new.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. CORAL REEFS -->
+    <section class="section-stage" id="section-reefs">
+      <div class="content-box">
+        <span class="section-tag">Living Architecture &bull; 150m</span>
+        <h2 class="section-title">THE CITY OF THE SEA</h2>
+        <p class="section-desc">
+          Coral reefs are home to thousands of marine species. Their colorful structures provide food, shelter, and a place for ocean life to thrive.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. OCEAN LIFE (Direct Typographic Layout) -->
+    <section class="section-stage" id="section-life" style="min-height: 145vh;">
+      <div class="content-box" style="max-width: 900px;">
+        <span class="section-tag">Marine Explorers &bull; 300m</span>
+        <h2 class="section-title">MEET THE OCEAN'S EXPLORERS</h2>
+        <p class="section-desc">
+          Meet the iconic voyagers of the depths, thriving across every current.
+        </p>
+
+        <div class="creatures-list">
+          <!-- Clownfish -->
+          <div class="creature-row">
+            <div class="creature-icon" aria-label="Clownfish">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 20 C10 12, 24 10, 31 17 C34 15, 37 13, 38 16 C37 19, 37 21, 38 24 C37 27, 34 25, 31 23 C24 30, 10 28, 6 20 Z" fill="rgba(0, 242, 254, 0.15)"/>
+                <path d="M16 12 C19 8, 25 9, 27 15" stroke="currentColor"/>
+                <path d="M18 20 C20 22, 23 25, 21 26 C19 26, 17 24, 18 20 Z" fill="rgba(0, 242, 254, 0.3)"/>
+                <circle cx="11" cy="18" r="1.5" fill="currentColor"/>
+                <path d="M14 13 C15.5 17, 15.5 23, 14 27" stroke="#ffffff" stroke-width="1.8"/>
+                <path d="M22 13 C23.5 17, 23.5 23, 22 27" stroke="#ffffff" stroke-width="1.8"/>
+                <path d="M29 18 C29.5 19, 29.5 21, 29 22" stroke="#ffffff" stroke-width="1.8"/>
+              </svg>
+            </div>
+            <div class="creature-info">
+              <div class="creature-name">
+                <span>Clownfish</span>
+                <span class="creature-role">Reef Symbiont</span>
+              </div>
+              <p class="creature-desc">Small, colorful fish that live among sea anemones.</p>
+              <button class="creature-dossier-btn" onclick="openCreatureDossier('clownfish')">
+                <span>Explore Specimen</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sea Turtle -->
+          <div class="creature-row">
+            <div class="creature-icon" aria-label="Sea Turtle">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="20" cy="8" rx="3.5" ry="4" fill="rgba(0, 242, 254, 0.15)"/>
+                <path d="M14 17 C7 14, 3 17, 4 21 C8 21, 13 20, 14 21" fill="rgba(0, 242, 254, 0.12)"/>
+                <path d="M26 17 C33 14, 37 17, 36 21 C32 21, 27 20, 26 21" fill="rgba(0, 242, 254, 0.12)"/>
+                <ellipse cx="20" cy="23" rx="8" ry="10" fill="rgba(0, 242, 254, 0.25)"/>
+                <path d="M20 13 L20 33" stroke="rgba(255,255,255,0.7)" stroke-width="1.2"/>
+                <path d="M14 19 L26 19 M12 25 L28 25" stroke="rgba(255,255,255,0.7)" stroke-width="1.2"/>
+                <path d="M15 31 C12 34, 12 37, 14 38 C16 36, 17 33, 17 32"/>
+                <path d="M25 31 C28 34, 28 37, 26 38 C24 36, 23 33, 23 32"/>
+                <path d="M20 33 L20 37"/>
+              </svg>
+            </div>
+            <div class="creature-info">
+              <div class="creature-name">
+                <span>Sea Turtle</span>
+                <span class="creature-role">Ancient Navigator</span>
+              </div>
+              <p class="creature-desc">Graceful travelers that cross vast oceans.</p>
+              <button class="creature-dossier-btn" onclick="openCreatureDossier('turtle')">
+                <span>Explore Specimen</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Manta Ray -->
+          <div class="creature-row">
+            <div class="creature-icon" aria-label="Manta Ray">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 10 C16 7, 18 6, 19 8 M23 10 C24 7, 22 6, 21 8" />
+                <path d="M20 9 C15 13, 7 17, 3 20 C10 23, 16 26, 19 28 C20 30, 20 38, 20 39 C20 38, 20 30, 21 28 C24 26, 30 23, 37 20 C33 17, 25 13, 20 9 Z" fill="rgba(0, 242, 254, 0.22)"/>
+                <path d="M20 12 L20 27" stroke="rgba(255,255,255,0.6)" stroke-width="1.2"/>
+                <path d="M15 18 C17 21, 19 22, 20 22 C21 22, 23 21, 25 18" stroke="rgba(255,255,255,0.6)" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <div class="creature-info">
+              <div class="creature-name">
+                <span>Manta Ray</span>
+                <span class="creature-role">Pelagic Glider</span>
+              </div>
+              <p class="creature-desc">Powerful and elegant swimmers of the open sea.</p>
+              <button class="creature-dossier-btn" onclick="openCreatureDossier('manta')">
+                <span>Explore Specimen</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Shark -->
+          <div class="creature-row">
+            <div class="creature-icon" aria-label="Shark">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 22 C10 17, 18 16, 23 17 L25 10 C26 12, 27 15, 29 17 C34 18, 37 19, 39 15 C37 21, 37 23, 39 27 C36 24, 33 24, 28 24 L27 28 C26 27, 25 25, 24 25 C18 25, 12 26, 8 28 L9 24 C7 24, 6 23, 5 22 Z" fill="rgba(0, 242, 254, 0.22)"/>
+                <path d="M16 23 L12 29 C15 28, 18 26, 19 24" fill="rgba(0, 242, 254, 0.3)"/>
+                <path d="M15 19 L14 22 M17 19 L16 22 M19 19 L18 22" stroke="rgba(255,255,255,0.7)" stroke-width="1.2"/>
+                <circle cx="8" cy="21" r="1" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="creature-info">
+              <div class="creature-name">
+                <span>Shark</span>
+                <span class="creature-role">Apex Guardian</span>
+              </div>
+              <p class="creature-desc">One of the ocean's most fascinating predators.</p>
+              <button class="creature-dossier-btn" onclick="openCreatureDossier('shark')">
+                <span>Explore Specimen</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Jellyfish -->
+          <div class="creature-row">
+            <div class="creature-icon" aria-label="Jellyfish">
+              <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <!-- Umbrella Dome -->
+                <path d="M9 20 C9 10, 31 10, 31 20 C28 19, 26 21, 24 20 C22 19, 20 21, 18 20 C16 19, 14 21, 12 20 C10 21, 9 20, 9 20 Z" fill="rgba(0, 242, 254, 0.3)"/>
+                <!-- Bioluminescent Inner Bell Ring -->
+                <path d="M13 18 C14 13, 26 13, 27 18" stroke="rgba(255,255,255,0.75)" stroke-width="1.2"/>
+                <!-- Oral Arms -->
+                <path d="M18 21 C17 25, 21 28, 19 33 C18 36, 19 37, 19 38" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M22 21 C23 25, 19 28, 21 33 C22 36, 21 37, 21 38" stroke="currentColor" stroke-width="1.6"/>
+                <!-- Drifting Bioluminescent Tentacles -->
+                <path d="M12 21 C11 25, 13 29, 12 34 C11 36, 12 37, 11 38" stroke="rgba(0, 242, 254, 0.85)" stroke-width="1.4" stroke-dasharray="2 1"/>
+                <path d="M15 21 C14 26, 16 30, 15 35" stroke="rgba(0, 242, 254, 0.6)" stroke-width="1.2"/>
+                <path d="M25 21 C26 26, 24 30, 25 35" stroke="rgba(0, 242, 254, 0.6)" stroke-width="1.2"/>
+                <path d="M28 21 C29 25, 27 29, 28 34 C29 36, 28 37, 29 38" stroke="rgba(0, 242, 254, 0.85)" stroke-width="1.4" stroke-dasharray="2 1"/>
+              </svg>
+            </div>
+            <div class="creature-info">
+              <div class="creature-name">
+                <span>Jellyfish</span>
+                <span class="creature-role">Bioluminescent Drifter</span>
+              </div>
+              <p class="creature-desc">Beautiful creatures that drift with the ocean currents.</p>
+              <button class="creature-dossier-btn" onclick="openCreatureDossier('jellyfish')">
+                <span>Explore Specimen</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. DEEPER INTO THE BLUE -->
+    <section class="section-stage" id="section-deep">
+      <div class="content-box">
+        <span class="section-tag">Twilight Zone &bull; 1000m</span>
+        <h2 class="section-title">THE DEEP OCEAN</h2>
+        <p class="section-desc">
+          The deeper we travel, the darker and quieter the ocean becomes. Yet even in the darkness, life continues to survive.
+        </p>
+      </div>
+    </section>
+
+    <!-- 6. THE LOST SHIP -->
+    <section class="section-stage" id="section-ship">
+      <div class="content-box">
+        <span class="section-tag">Abyssal Floor &bull; 2500m</span>
+        <h2 class="section-title">SECRETS OF THE DEEP</h2>
+        <p class="section-desc">
+          Hidden beneath the waves, an old ship rests on the ocean floor. Over time, the sea has transformed it into a home for marine life.
+        </p>
+      </div>
+    </section>
+
+    <!-- 7. PROTECT OUR OCEANS -->
+    <section class="section-stage" id="section-protect">
+      <div class="content-box">
+        <span class="section-tag" style="color:#34d399; text-shadow:0 0 16px rgba(52,211,153,0.6);">Conservation Call</span>
+        <h2 class="section-title">THE OCEAN NEEDS US</h2>
+        <p class="section-desc">
+          Healthy oceans are essential for life on Earth. Reducing plastic pollution, protecting marine habitats, and using ocean resources responsibly can help preserve this incredible world.
+        </p>
+        <button class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);" onclick="openModal()">
+          <span>Protect The Blue</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- 8. FINAL SECTION -->
+    <section class="section-stage" id="section-finale">
+      <div class="content-box">
+        <span class="section-tag">Epilogue</span>
+        <h2 class="section-title">THE OCEAN IS FULL OF STORIES</h2>
+        <p class="section-desc">
+          Every wave hides a story. Every reef protects a world. And beneath the blue, there is always something waiting to be discovered.
+        </p>
+        <button class="btn-primary" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+          <span>Explore Again</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Conservation Pledge Modal -->
+  <div class="modal-backdrop" id="pledge-modal" onclick="closeModal(event)">
+    <div class="modal-dialog" onclick="event.stopPropagation()">
+      <div style="font-size:3rem; margin-bottom:12px;">&#127754;</div>
+      <h3 class="modal-title">PROTECT THE BLUE</h3>
+      <p class="modal-text">
+        Thank you for pledging to protect our oceans. Every conscious action to reduce plastic and safeguard marine habitats helps preserve our blue planet.
+      </p>
+      <button class="btn-primary" onclick="closeModal()">
+        <span>Honor The Pledge</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Interactive Marine Specimen Dossier Modal -->
+  <div class="dossier-modal-backdrop" id="creature-dossier-modal" onclick="closeCreatureDossier(event)">
+    <div class="dossier-modal-dialog" onclick="event.stopPropagation()">
+      <!-- Header with Tabs and Close -->
+      <div class="dossier-header">
+        <div class="dossier-tabs" id="dossier-tabs">
+          <button class="dossier-tab-btn" data-key="clownfish" onclick="switchDossierCreature('clownfish')">Clownfish</button>
+          <button class="dossier-tab-btn" data-key="turtle" onclick="switchDossierCreature('turtle')">Sea Turtle</button>
+          <button class="dossier-tab-btn" data-key="manta" onclick="switchDossierCreature('manta')">Manta Ray</button>
+          <button class="dossier-tab-btn" data-key="shark" onclick="switchDossierCreature('shark')">Shark</button>
+          <button class="dossier-tab-btn" data-key="jellyfish" onclick="switchDossierCreature('jellyfish')">Jellyfish</button>
+        </div>
+        <button class="dossier-close-btn" onclick="closeCreatureDossier()" title="Close Dossier">&times;</button>
+      </div>
+
+      <!-- Main Body: Animated Specimen Chamber + Detailed Dossier -->
+      <div class="dossier-body">
+        <!-- Left: Relatable Animated Specimen Chamber -->
+        <div class="specimen-chamber">
+          <div class="chamber-water-fx"></div>
+          <div style="font-family:monospace; font-size:0.7rem; color:rgba(0,242,254,0.6); letter-spacing:0.12em; width:100%; display:flex; justify-content:space-between; z-index:2;">
+            <span>// AQUA-SPECIMEN TELEMETRY</span>
+            <span id="dossier-specimen-id">AQV-01</span>
+          </div>
+
+          <div class="chamber-viewport" id="chamber-viewport">
+            <!-- Animated SVG dynamically injected here -->
+          </div>
+
+          <div class="chamber-hud">
+            <span id="chamber-hud-status">STATUS: BIOLUMINESCENT</span>
+            <span id="chamber-hud-depth">DEPTH: 15M</span>
+          </div>
+        </div>
+
+        <!-- Right: Comprehensive Biological Details -->
+        <div class="dossier-details">
+          <div class="dossier-name-row">
+            <h3 class="dossier-species-title" id="dossier-title">Clownfish</h3>
+            <span class="dossier-badge" id="dossier-role">Reef Symbiont</span>
+          </div>
+          <div class="dossier-latin-name" id="dossier-latin">Amphiprioninae (Amphiprion ocellaris)</div>
+
+          <!-- Quick Metrics Grid -->
+          <div class="dossier-grid">
+            <div class="dossier-metric-card">
+              <div class="dossier-metric-label">Dimensions / Mass</div>
+              <div class="dossier-metric-val" id="dossier-size">7 – 11 cm • 250 g</div>
+            </div>
+            <div class="dossier-metric-card">
+              <div class="dossier-metric-label">Maximum Speed</div>
+              <div class="dossier-metric-val" id="dossier-speed">6 km/h (Maneuverable)</div>
+            </div>
+            <div class="dossier-metric-card">
+              <div class="dossier-metric-label">Diet &amp; Prey</div>
+              <div class="dossier-metric-val" id="dossier-diet">Zooplankton &amp; Algae</div>
+            </div>
+            <div class="dossier-metric-card">
+              <div class="dossier-metric-label">Lifespan &amp; Status</div>
+              <div class="dossier-metric-val" id="dossier-lifespan">6 – 10 Yrs • Stable</div>
+            </div>
+          </div>
+
+          <!-- Key Adaptation Section -->
+          <div class="dossier-section">
+            <div class="dossier-section-title">Unique Adaptation &amp; Defense</div>
+            <p class="dossier-section-text" id="dossier-adaptation">
+              Hypo-allergenic mucus coating prevents sea anemone stinging nematocysts from detonating, granting total symbiosis.
+            </p>
+          </div>
+
+          <!-- Ecological Role Section -->
+          <div class="dossier-section">
+            <div class="dossier-section-title">Ocean Ecological Impact</div>
+            <p class="dossier-section-text" id="dossier-eco">
+              Defends host anemones from predatory butterflyfish while fertilizing tentacles with vital nitrogen nutrients.
+            </p>
+          </div>
+
+          <!-- Curious Trivia Section -->
+          <div class="dossier-section" style="border-left-color: #38bdf8;">
+            <div class="dossier-section-title" style="color: #38bdf8;">Marine Curiosity</div>
+            <p class="dossier-section-text" id="dossier-fact">
+              All clownfish are hatched as males; the dominant fish in a colony changes sex to become the reproductive queen.
+            </p>
+          </div>
+
+          <!-- Telemetry Performance Bars -->
+          <div class="dossier-telemetry-bars">
+            <div class="telemetry-row">
+              <span class="telemetry-label">Agility / Speed</span>
+              <div class="telemetry-track"><div class="telemetry-fill" id="bar-speed" style="width: 65%;"></div></div>
+              <span class="telemetry-val" id="val-speed">65%</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Depth Tolerance</span>
+              <div class="telemetry-track"><div class="telemetry-fill" id="bar-depth" style="width: 15%;"></div></div>
+              <span class="telemetry-val" id="val-depth">15%</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Stealth &amp; Camouflage</span>
+              <div class="telemetry-track"><div class="telemetry-fill" id="bar-stealth" style="width: 82%;"></div></div>
+              <span class="telemetry-val" id="val-stealth">82%</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Sensory Perception</span>
+              <div class="telemetry-track"><div class="telemetry-fill" id="bar-sensory" style="width: 74%;"></div></div>
+              <span class="telemetry-val" id="val-sensory">74%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer with Prev/Next controls -->
+      <div class="dossier-footer">
+        <button class="dossier-tab-btn" onclick="navigateDossier(-1)">
+          &larr; Prev Specimen
+        </button>
+        <span style="font-family:monospace; font-size:0.75rem; color:#94a3b8;" id="dossier-footer-index">1 / 5</span>
+        <button class="dossier-tab-btn" onclick="navigateDossier(1)">
+          Next Specimen &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const TOTAL_FRAMES = 480;
+      const FOLDER = 'all-frames';
+      const canvas = document.getElementById('hero-canvas');
+      const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+      const progressLine = document.getElementById('progress-line');
+      const depthReadout = document.getElementById('depth-readout');
+      const gaugeThumb = document.getElementById('gauge-thumb');
+      const gaugeDepthVal = document.getElementById('gauge-depth-val');
+      const ambientOverlay = document.getElementById('ambient-overlay');
+
+      let lastScrollY = window.scrollY || 0;
+
+      const images = new Array(TOTAL_FRAMES);
+      const isLoaded = new Array(TOTAL_FRAMES).fill(false);
+      let currentFrame = 0;
+      let targetFrame = 0;
+      let lastRenderedFrame = -1;
+
+      const getFrameSrc = (index) => {
+        const frameNum = String(index + 1).padStart(4, '0');
+        return `${FOLDER}/frame-${frameNum}.jpg`;
+      };
+
+      const resizeCanvas = () => {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(window.innerWidth * dpr);
+        canvas.height = Math.round(window.innerHeight * dpr);
+
+        // Calculate exact horizontal offset of the video to keep all text/elements inside
+        const scale = Math.min(window.innerWidth / 2560, window.innerHeight / 1440);
+        const videoWidth = 2560 * scale;
+        const videoOffsetLeft = Math.max(0, (window.innerWidth - videoWidth) / 2);
+        document.documentElement.style.setProperty('--video-offset-left', `${Math.round(videoOffsetLeft)}px`);
+
+        if (typeof updateAudioLabel === 'function') {
+          updateAudioLabel();
+        }
+
+        lastRenderedFrame = -1;
+        drawFrame(Math.round(currentFrame));
+      };
+
+      const drawFrame = (frameIdx) => {
+        let img = images[frameIdx];
+
+        if (!img || !isLoaded[frameIdx]) {
+          let nearest = -1;
+          let minDiff = Infinity;
+          for (let i = 0; i < TOTAL_FRAMES; i++) {
+            if (isLoaded[i]) {
+              const diff = Math.abs(i - frameIdx);
+              if (diff < minDiff) {
+                minDiff = diff;
+                nearest = i;
+              }
+            }
+          }
+          if (nearest !== -1) {
+            img = images[nearest];
+          } else {
+            return;
+          }
+        }
+
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const iw = img.naturalWidth || 2560;
+        const ih = img.naturalHeight || 1440;
+
+        const scale = Math.min(cw / iw, ch / ih);
+        const dw = iw * scale;
+        const dh = ih * scale;
+        const dx = (cw - dw) / 2;
+        const dy = (ch - dh) / 2;
+
+        ctx.fillStyle = '#030814';
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(img, dx, dy, dw, dh);
+        lastRenderedFrame = frameIdx;
+      };
+
+      const onScroll = () => {
+        const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+        const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        const fraction = Math.min(Math.max(scrollY / maxScroll, 0), 1);
+
+        // Direction detection: scroll down shows down arrow, scroll up shows up arrow
+        if (scrollY > lastScrollY + 1) {
+          if (gaugeThumb) gaugeThumb.classList.remove('direction-up');
+        } else if (scrollY < lastScrollY - 1) {
+          if (gaugeThumb) gaugeThumb.classList.add('direction-up');
+        }
+        lastScrollY = scrollY;
+
+        targetFrame = fraction * (TOTAL_FRAMES - 1);
+        progressLine.style.width = (fraction * 100) + '%';
+
+        const simulatedMeters = Math.round(fraction * 3800);
+        let zone = "SURFACE";
+        if (simulatedMeters > 50 && simulatedMeters <= 200) zone = "SUNLIGHT ZONE";
+        else if (simulatedMeters > 200 && simulatedMeters <= 1000) zone = "TWILIGHT ZONE";
+        else if (simulatedMeters > 1000 && simulatedMeters <= 2500) zone = "MIDNIGHT ZONE";
+        else if (simulatedMeters > 2500) zone = "ABYSSAL REALM";
+
+        depthReadout.innerHTML = `<span class="depth-meters">${simulatedMeters}M</span> <span class="depth-sep">&bull;</span> <span class="depth-zone">${zone}</span>`;
+        if (gaugeThumb) gaugeThumb.style.top = `${fraction * 156}px`;
+        if (gaugeDepthVal) gaugeDepthVal.textContent = `${simulatedMeters}m`;
+
+        if (ambientOverlay) {
+          const darkFactor = Math.min(fraction * 0.95, 0.95);
+          ambientOverlay.style.background = `radial-gradient(circle at 50% 25%, rgba(0, 242, 254, ${0.05 - fraction * 0.03}) 0%, rgba(3, 8, 20, ${0.25 + darkFactor * 0.45}) 50%, rgba(2, 4, 10, ${0.75 + darkFactor * 0.2}) 100%)`;
+        }
+      };
+
+      const preloadImages = () => {
+        const first = new Image();
+        first.src = getFrameSrc(0);
+        images[0] = first;
+        first.onload = () => {
+          isLoaded[0] = true;
+          drawFrame(0);
+        };
+
+        for (let i = 1; i < TOTAL_FRAMES; i++) {
+          const img = new Image();
+          img.src = getFrameSrc(i);
+          images[i] = img;
+
+          img.onload = () => {
+            isLoaded[i] = true;
+            if (Math.round(currentFrame) === i) {
+              drawFrame(i);
+            }
+          };
+        }
+      };
+
+      const LERP_FACTOR = 0.12;
+      const animate = () => {
+        const diff = targetFrame - currentFrame;
+        if (Math.abs(diff) > 0.005) {
+          currentFrame += diff * LERP_FACTOR;
+        } else {
+          currentFrame = targetFrame;
+        }
+
+        const frameToRender = Math.min(Math.max(Math.round(currentFrame), 0), TOTAL_FRAMES - 1);
+        if (frameToRender !== lastRenderedFrame) {
+          drawFrame(frameToRender);
+        }
+
+        requestAnimationFrame(animate);
+      };
+
+      const observeSections = () => {
+        const boxes = document.querySelectorAll('.content-box');
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('active');
+            } else {
+              const rect = entry.target.getBoundingClientRect();
+              if (rect.bottom < 0 || rect.top > window.innerHeight) {
+                entry.target.classList.remove('active');
+              }
+            }
+          });
+        }, {
+          threshold: 0.2,
+          rootMargin: "0px 0px -10% 0px"
+        });
+
+        boxes.forEach(box => observer.observe(box));
+      };
+
+      // Ambient bubbles
+      const initBubbles = () => {
+        const bCanvas = document.getElementById('bubble-canvas');
+        const bCtx = bCanvas.getContext('2d');
+        let bubbles = [];
+
+        const resizeBubbles = () => {
+          bCanvas.width = window.innerWidth;
+          bCanvas.height = window.innerHeight;
+        };
+
+        const createBubble = () => ({
+          x: Math.random() * bCanvas.width,
+          y: bCanvas.height + Math.random() * 50,
+          r: 1.5 + Math.random() * 3.5,
+          speed: 0.5 + Math.random() * 1.2,
+          wobble: Math.random() * Math.PI * 2,
+          wobbleSpeed: 0.02 + Math.random() * 0.03,
+          opacity: 0.12 + Math.random() * 0.35
+        });
+
+        for (let i = 0; i < 30; i++) {
+          const b = createBubble();
+          b.y = Math.random() * window.innerHeight;
+          bubbles.push(b);
+        }
+
+        const renderBubbles = () => {
+          bCtx.clearRect(0, 0, bCanvas.width, bCanvas.height);
+          bubbles.forEach(b => {
+            b.y -= b.speed;
+            b.wobble += b.wobbleSpeed;
+            const currentX = b.x + Math.sin(b.wobble) * 1.5;
+
+            bCtx.beginPath();
+            bCtx.arc(currentX, b.y, b.r, 0, Math.PI * 2);
+            bCtx.fillStyle = `rgba(0, 242, 254, ${b.opacity})`;
+            bCtx.fill();
+
+            if (b.y < -10) {
+              b.y = bCanvas.height + 10;
+              b.x = Math.random() * bCanvas.width;
+            }
+          });
+          requestAnimationFrame(renderBubbles);
+        };
+
+        window.addEventListener('resize', resizeBubbles);
+        resizeBubbles();
+        renderBubbles();
+      };
+
+      // HIGH-FIDELITY STUDIO AUDIO ENGINE
+      const audioElement = document.getElementById('ambient-audio');
+      const audioToggle = document.getElementById('audio-toggle');
+      let isPlaying = false;
+
+      audioElement.volume = 0.85;
+
+      const toggleSound = () => {
+        if (!isPlaying) {
+          audioElement.play().then(() => {
+            isPlaying = true;
+            audioToggle.classList.add('playing');
+            audioToggle.title = 'Mute Sound';
+          }).catch(err => {
+            console.log('Audio autoplay prevented, awaiting user click:', err);
+          });
+        } else {
+          audioElement.pause();
+          isPlaying = false;
+          audioToggle.classList.remove('playing');
+          audioToggle.title = 'Play Sound';
+        }
+      };
+
+      window.startExperience = () => {
+        // Unlock audio on Start Exploring click if not already playing
+        if (!isPlaying) {
+          audioElement.play().then(() => {
+            isPlaying = true;
+            audioToggle.classList.add('playing');
+            audioToggle.title = 'Mute Sound';
+          }).catch(() => {});
+        }
+        scrollToSection('section-journey');
+      };
+
+      if (audioToggle) {
+        audioToggle.addEventListener('click', toggleSound);
+      }
+
+      // Auto-unlock audio on first user click anywhere on page
+      const firstInteractionUnlock = () => {
+        if (!isPlaying) {
+          audioElement.play().then(() => {
+            isPlaying = true;
+            audioToggle.classList.add('playing');
+            audioToggle.title = 'Mute Sound';
+          }).catch(() => {});
+        }
+        window.removeEventListener('click', firstInteractionUnlock);
+      };
+      window.addEventListener('click', firstInteractionUnlock, { once: true });
+
+      window.addEventListener('resize', resizeCanvas, { passive: true });
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      resizeCanvas();
+      preloadImages();
+      onScroll();
+      requestAnimationFrame(animate);
+      observeSections();
+      initBubbles();
+    })();
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function openModal() {
+      document.getElementById('pledge-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('pledge-modal').classList.remove('show');
+    }
+
+    // ==========================================
+    // INTERACTIVE MARINE SPECIES DOSSIER SYSTEM
+    // ==========================================
+    const CREATURE_KEYS = ['clownfish', 'turtle', 'manta', 'shark', 'jellyfish'];
+    let currentDossierIndex = 0;
+
+    const CREATURES_DATA = {
+      clownfish: {
+        specimenId: 'AQV-01 // TELEMETRY',
+        name: 'Clownfish',
+        latin: 'Amphiprioninae (Amphiprion ocellaris)',
+        role: 'Reef Symbiont',
+        depth: '1 – 15m (Sunlit Shallows)',
+        size: '7 – 11 cm • 250 g',
+        speed: '6 km/h (High Agility)',
+        diet: 'Zooplankton, copepods, algae',
+        lifespan: '6 – 10 Yrs • Stable',
+        adaptation: 'A thick, specialized epidermal mucus layer prevents sea anemone stinging nematocysts from firing, allowing the clownfish to nest safely within venomous tentacles that would kill other fish.',
+        eco: 'Clownfish defend their host anemones from parasitic butterflyfish and keep tentacles aerated, while their nitrogen-rich waste fertilizes the anemone’s photosynthetic zooxanthellae.',
+        fact: 'All clownfish are born as hermaphrodites and develop into males first. The largest and most dominant member of a colony metamorphoses into a female to rule the social hierarchy.',
+        metrics: { speed: 65, depth: 15, stealth: 82, sensory: 74 },
+        hudStatus: 'SYMBIOSIS: NOMINAL',
+        hudDepth: 'DEPTH: 12M // TROPIC',
+        svg: `<svg viewBox="0 0 200 160" width="220" height="170" class="anim-clownfish" fill="none">
+          <g class="anemone-tentacles" stroke="#f472b6" stroke-width="4" opacity="0.65" stroke-linecap="round">
+            <path d="M35 150 C25 110, 45 80, 30 40" />
+            <path d="M50 150 C45 100, 70 70, 55 30" />
+            <path d="M68 150 C78 110, 62 75, 78 45" />
+            <path d="M88 150 C95 105, 118 70, 102 35" />
+            <path d="M105 150 C112 115, 130 85, 120 50" />
+          </g>
+          <!-- Floating Bubbles -->
+          <circle cx="28" cy="70" r="3" fill="#00f2fe" opacity="0.7"/>
+          <circle cx="20" cy="50" r="2" fill="#00f2fe" opacity="0.6"/>
+          <circle cx="24" cy="30" r="1.5" fill="#ffffff" opacity="0.8"/>
+          <!-- Fish Body -->
+          <g fill="#ff7a18" stroke="#000000" stroke-width="1.8">
+            <path d="M140 80 C155 60, 175 55, 185 65 C175 80, 175 80, 185 95 C175 105, 155 100, 140 80 Z" class="tail" fill="#ff6b00"/>
+            <path d="M45 80 C60 45, 115 40, 145 68 C150 75, 150 85, 145 92 C115 120, 60 115, 45 80 Z" fill="#ff7a18"/>
+            <path d="M85 45 C100 30, 125 35, 135 60" fill="#ff6b00"/>
+            <path d="M75 80 C85 90, 100 100, 90 105 C80 105, 70 95, 75 80 Z" fill="#ffa94d"/>
+            <circle cx="62" cy="72" r="5.5" fill="#ffffff" stroke="#000000" stroke-width="1.5"/>
+            <circle cx="60.5" cy="72" r="2.8" fill="#000000"/>
+            <circle cx="61.5" cy="71" r="1" fill="#ffffff"/>
+            <path d="M72 52 C78 68, 78 92, 72 108" stroke="#ffffff" stroke-width="7" stroke-linecap="round"/>
+            <path d="M105 45 C110 65, 110 95, 105 115" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+            <path d="M138 67 C140 73, 140 87, 138 93" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+          </g>
+        </svg>`
+      },
+      turtle: {
+        specimenId: 'AQV-02 // TELEMETRY',
+        name: 'Sea Turtle',
+        latin: 'Chelonia mydas (Green Sea Turtle)',
+        role: 'Ancient Navigator',
+        depth: '0 – 290m (Coastal to Pelagic)',
+        size: '1.0 – 1.5 m • 130 – 160 kg',
+        speed: '35 km/h (Burst Flight)',
+        diet: 'Seagrasses, sponges, jellyfish',
+        lifespan: '80 – 100+ Yrs • Endangered',
+        adaptation: 'Possesses internal geomagnetic biomineral receivers that read Earth’s magnetic dipole orientation, empowering multi-thousand-mile trans-oceanic navigation back to their exact birth beach.',
+        eco: 'Acts as the ocean’s lawnmower by constantly grazing underwater seagrass meadows, ensuring beds remain healthy, oxygenated nurseries for commercial fisheries and coral habitats.',
+        fact: 'While resting or sleeping deep underwater on the seabed, sea turtles can decelerate their heart rate to a single beat every nine minutes, conserving oxygen for over five consecutive hours.',
+        metrics: { speed: 78, depth: 60, stealth: 68, sensory: 92 },
+        hudStatus: 'GEOMAGNETIC LOCK',
+        hudDepth: 'DEPTH: 140M // CRUISE',
+        svg: `<svg viewBox="0 0 200 180" width="220" height="180" class="anim-turtle" fill="none">
+          <!-- Drifting Emerald Seagrass in Background -->
+          <g class="anemone-tentacles" stroke="#059669" stroke-width="3.5" opacity="0.55" stroke-linecap="round">
+            <path d="M22 170 C14 130, 32 90, 18 40" />
+            <path d="M36 170 C28 110, 48 75, 36 30" />
+            <path d="M176 170 C186 125, 162 85, 176 35" stroke="#10b981"/>
+            <path d="M190 170 C198 115, 180 70, 192 25" stroke="#10b981"/>
+          </g>
+          <!-- Left Front Flipper (Mottled Sea Green with Golden Edges) -->
+          <path d="M72 72 C32 52, 10 70, 16 92 C36 92, 64 84, 70 88" class="flipper-l" fill="#059669" stroke="#047857" stroke-width="2"/>
+          <path d="M42 68 C30 75, 24 85, 30 88" stroke="#34d399" stroke-width="2.2" stroke-linecap="round"/>
+          <!-- Right Front Flipper -->
+          <path d="M128 72 C168 52, 190 70, 184 92 C164 92, 136 84, 130 88" class="flipper-r" fill="#059669" stroke="#047857" stroke-width="2"/>
+          <path d="M158 68 C170 75, 176 85, 170 88" stroke="#34d399" stroke-width="2.2" stroke-linecap="round"/>
+          <!-- Hind Flippers -->
+          <path d="M78 136 C60 155, 60 168, 72 172 C84 164, 88 148, 88 140" fill="#047857" stroke="#064e3b" stroke-width="2"/>
+          <path d="M122 136 C140 155, 140 168, 128 172 C116 164, 112 148, 112 140" fill="#047857" stroke="#064e3b" stroke-width="2"/>
+          <!-- Tail -->
+          <path d="M100 148 L100 168" stroke="#059669" stroke-width="4" stroke-linecap="round"/>
+          <!-- Head & Neck in Vibrant Olive/Green -->
+          <ellipse cx="100" cy="35" rx="14" ry="18" fill="#10b981" stroke="#047857" stroke-width="2"/>
+          <!-- Realistic Eyes with Gold Sclera -->
+          <circle cx="93" cy="28" r="3.5" fill="#fef08a" stroke="#047857" stroke-width="1"/>
+          <circle cx="93" cy="28" r="2" fill="#0f172a"/>
+          <circle cx="107" cy="28" r="3.5" fill="#fef08a" stroke="#047857" stroke-width="1"/>
+          <circle cx="107" cy="28" r="2" fill="#0f172a"/>
+          <!-- Outer Shell Rim (Warm Amber/Bronze) -->
+          <ellipse cx="100" cy="100" rx="42" ry="52" fill="#d97706" stroke="#b45309" stroke-width="3"/>
+          <!-- Deep Emerald Carapace Center -->
+          <ellipse cx="100" cy="100" rx="37" ry="46" fill="#15803d" stroke="#166534" stroke-width="2"/>
+          <!-- Geometric Amber & Gold Scutes -->
+          <path d="M100 56 L100 144" stroke="#fde047" stroke-width="3" stroke-linecap="round"/>
+          <polygon points="100,68 116,84 100,100 84,84" fill="#b45309" stroke="#fde047" stroke-width="2"/>
+          <polygon points="100,100 116,116 100,132 84,116" fill="#b45309" stroke="#fde047" stroke-width="2"/>
+          <path d="M84 84 L65 80 M116 84 L135 80 M84 116 L65 120 M116 116 L135 120" stroke="#fde047" stroke-width="2" stroke-linecap="round"/>
+        </svg>`
+      },
+      manta: {
+        specimenId: 'AQV-03 // TELEMETRY',
+        name: 'Manta Ray',
+        latin: 'Mobula birostris (Giant Oceanic Manta)',
+        role: 'Pelagic Glider',
+        depth: '0 – 1,000m (Surface to Mesopelagic)',
+        size: 'Wingspan 7.0 m • 2,000 kg',
+        speed: '24 km/h (Hydrodynamic Glide)',
+        diet: 'Zooplankton, krill, fish larvae',
+        lifespan: '40 – 50 Yrs • Vulnerable',
+        adaptation: 'Boasts the largest brain-to-body mass ratio of all cold-blooded fish, equipped with specialized counter-current heat exchangers to maintain cognitive warmth in frigid bathyal depths.',
+        eco: 'Serves as open-ocean nutrient pumps, feeding on rich deep-sea plankton blooms at night and transferring vital carbon and nutrients to shallow coral reefs during daily basking cycles.',
+        fact: 'Manta rays have demonstrated self-awareness by passing the mirror test, interacting socially with diver teams, and exhibiting curious exploratory problem-solving behavior.',
+        metrics: { speed: 74, depth: 78, stealth: 58, sensory: 86 },
+        hudStatus: 'FILTER-FEEDING ACTIVE',
+        hudDepth: 'DEPTH: 620M // OPEN SEA',
+        svg: `<svg viewBox="0 0 240 180" width="240" height="180" class="anim-manta" fill="none">
+          <!-- Bioluminescent Deep-Sea Plankton in Background -->
+          <circle cx="35" cy="40" r="3" fill="#fde047" opacity="0.85"/>
+          <circle cx="50" cy="140" r="2.5" fill="#38bdf8" opacity="0.75"/>
+          <circle cx="195" cy="45" r="2.5" fill="#38bdf8" opacity="0.8"/>
+          <circle cx="212" cy="130" r="3" fill="#fde047" opacity="0.85"/>
+          <circle cx="120" cy="16" r="2" fill="#ffffff" opacity="0.9"/>
+          <!-- Whip Tail -->
+          <path d="M120 135 C120 152, 118 168, 120 178" stroke="#334155" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Manta Wings Assembly -->
+          <g class="manta-wings">
+            <!-- Main Velvety Midnight-Blue Body -->
+            <path d="M120 42 C92 64, 48 84, 18 102 C56 115, 95 128, 114 138 C120 144, 120 144, 126 138 C145 128, 184 115, 222 102 C192 84, 148 64, 120 42 Z" fill="#1e293b" stroke="#0f172a" stroke-width="2.5"/>
+            <!-- Electric Cyan Wingtip Edge Glow -->
+            <path d="M18 102 C38 94, 65 80, 85 68" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M222 102 C202 94, 175 80, 155 68" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Distinctive Oceanic White Shoulder Chevrons -->
+            <path d="M105 52 C88 62, 70 78, 62 92 C78 88, 98 75, 108 65 Z" fill="#f8fafc"/>
+            <path d="M135 52 C152 62, 170 78, 178 92 C162 88, 142 75, 132 65 Z" fill="#f8fafc"/>
+            <!-- Royal Blue Dorsal Spine Ridge -->
+            <path d="M120 54 L120 130" stroke="#0284c7" stroke-width="3" stroke-linecap="round"/>
+            <!-- Cephalic Lobes / Horns (Dual-Tone Midnight & White) -->
+            <path d="M106 44 C98 28, 110 24, 114 34" stroke="#f8fafc" fill="#1e293b" stroke-width="2.5"/>
+            <path d="M134 44 C142 28, 130 24, 126 34" stroke="#f8fafc" fill="#1e293b" stroke-width="2.5"/>
+            <!-- Golden Lateral Eyes -->
+            <circle cx="86" cy="62" r="3.5" fill="#fde047" stroke="#0f172a" stroke-width="1"/>
+            <circle cx="86" cy="62" r="1.8" fill="#0f172a"/>
+            <circle cx="154" cy="62" r="3.5" fill="#fde047" stroke="#0f172a" stroke-width="1"/>
+            <circle cx="154" cy="62" r="1.8" fill="#0f172a"/>
+          </g>
+        </svg>`
+      },
+      shark: {
+        specimenId: 'AQV-04 // TELEMETRY',
+        name: 'Shark',
+        latin: 'Carcharodon carcharias (Apex Guardian)',
+        role: 'Apex Guardian',
+        depth: '0 – 1,200m (Global Oceans)',
+        size: '4.5 – 6.0 m • 1,100 – 2,200 kg',
+        speed: '56 km/h (Apex Ambush)',
+        diet: 'Tuna, marine mammals, pelagic fish',
+        lifespan: '70+ Yrs • Vulnerable',
+        adaptation: 'The Ampullae of Lorenzini—electro-receptive jelly-filled pores covering the snout—detect electrical pulses as faint as one-billionth of a volt, sensing the rhythmic muscle contractions of prey buried beneath sand.',
+        eco: 'As keystone apex predators, sharks preserve ocean equilibrium by culling sick and elderly animals, preventing destructive meso-predator explosions that collapse marine vegetation.',
+        fact: 'Sharks are evolutionary masterpieces that have patrolled Earth’s seas for over 400 million years—surviving four global extinction events and predating both trees and dinosaurs.',
+        metrics: { speed: 94, depth: 84, stealth: 88, sensory: 98 },
+        hudStatus: 'ELECTRO-RECEPTION LOCK',
+        hudDepth: 'DEPTH: 850M // TWILIGHT',
+        svg: `<svg viewBox="0 0 240 160" width="240" height="160" class="anim-shark" fill="none">
+          <!-- Sunlight Caustics Piercing from Surface -->
+          <path d="M55 0 L35 160 M115 0 L85 160 M175 0 L145 160" stroke="rgba(255,255,255,0.18)" stroke-width="8" stroke-linecap="round"/>
+          <!-- Slate Steel Blue-Grey Dorsal Body -->
+          <path d="M22 88 C48 65, 92 62, 118 66 L130 32 C136 42, 142 56, 150 66 C176 70, 192 74, 204 56 C192 84, 192 92, 204 110 C188 96, 170 96, 144 96 L138 114 C132 108, 126 98, 120 98 C90 98, 62 104, 38 112 L44 96 C32 96, 26 92, 22 88 Z" fill="#475569" stroke="#1e293b" stroke-width="2.5"/>
+          <!-- Darkened Fin Tips -->
+          <path d="M125 45 L130 32 C134 39, 137 46, 140 52 Z" fill="#0f172a"/>
+          <!-- Snow-White Countershaded Belly -->
+          <path d="M36 94 C55 94, 85 96, 120 98 C140 96, 165 96, 185 94 C175 102, 145 106, 120 106 C80 106, 52 104, 36 94 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+          <!-- Crimson Mouth Line & Razor White Teeth -->
+          <path d="M28 92 C38 95, 48 95, 54 92" stroke="#b91c1c" stroke-width="2.5"/>
+          <polygon points="34,92 37,96 40,92" fill="#ffffff"/>
+          <polygon points="41,92 44,96 47,92" fill="#ffffff"/>
+          <!-- Powerful Pectoral Fin with Dark Tip -->
+          <path d="M84 92 L62 120 C78 116, 94 106, 98 96 Z" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+          <!-- 5 Crimson Active Gill Slits -->
+          <g stroke="#991b1b" stroke-width="2" stroke-linecap="round">
+            <path d="M76 78 L72 88" />
+            <path d="M83 78 L79 88" />
+            <path d="M90 78 L86 88" />
+            <path d="M97 78 L93 88" />
+            <path d="M104 78 L100 88" />
+          </g>
+          <!-- Predatory Eye with Cyan Specular Glint -->
+          <circle cx="44" cy="82" r="4" fill="#020617" stroke="#94a3b8" stroke-width="1.2"/>
+          <circle cx="45" cy="81" r="1.5" fill="#38bdf8"/>
+          <!-- Caudal Propeller Tail -->
+          <path d="M174 80 C190 62, 212 46, 226 52 C212 76, 212 88, 226 114 C212 104, 190 90, 174 80 Z" class="shark-tail" fill="#334155" stroke="#0f172a" stroke-width="2.5"/>
+        </svg>`
+      },
+      jellyfish: {
+        specimenId: 'AQV-05 // TELEMETRY',
+        name: 'Jellyfish',
+        latin: 'Aequorea victoria / Pelagia noctiluca',
+        role: 'Bioluminescent Drifter',
+        depth: '10 – 3,000m (Bathy & Abyssal)',
+        size: 'Bell: 10 – 30 cm • Tentacles: 2 m',
+        speed: '2 km/h (Jet Propulsion)',
+        diet: 'Fish larvae, copepods, small medusae',
+        lifespan: 'Months to Immortal • Abundant',
+        adaptation: 'Synthesizes Green Fluorescent Protein (GFP) activated by calcium flashes to release stunning emerald and sapphire bioluminescent pulses that confuse predators in pitch-black abyssal trenches.',
+        eco: 'Drives the global biological carbon pump by trapping organic carbon in gelatinous tissues, which upon demise sink rapidly to ocean trenches, locking carbon deep in marine sediment.',
+        fact: 'Composed of 95% water, jellyfish have thrived for over 500 million years without a brain, heart, blood, lungs, or bones, relying entirely on a diffuse neural net.',
+        metrics: { speed: 30, depth: 98, stealth: 96, sensory: 70 },
+        hudStatus: 'BIOLUMINESCENCE ACTIVE',
+        hudDepth: 'DEPTH: 2,400M // ABYSS',
+        svg: `<svg viewBox="0 0 200 220" width="200" height="220" class="anim-jellyfish" fill="none">
+          <!-- Bioluminescent Floating Sparks -->
+          <circle cx="35" cy="50" r="2.5" fill="#00f2fe" opacity="0.9"/>
+          <circle cx="165" cy="65" r="3" fill="#ec4899" opacity="0.9"/>
+          <circle cx="40" cy="180" r="2.5" fill="#a855f7" opacity="0.8"/>
+          <circle cx="170" cy="190" r="2.5" fill="#00f2fe" opacity="0.9"/>
+          <circle cx="100" cy="25" r="2" fill="#fde047" opacity="0.85"/>
+          <!-- Outer Umbrella Bell (Translucent Radiant Fuchsia / Violet) -->
+          <path d="M42 90 C42 42, 158 42, 158 90 C144 84, 134 94, 122 88 C112 82, 100 94, 88 88 C76 82, 66 94, 56 88 C48 94, 42 90, 42 90 Z" fill="rgba(217, 70, 239, 0.48)" stroke="#00f2fe" stroke-width="2.5"/>
+          <!-- Luminous Inner Dome Curve -->
+          <path d="M60 82 C66 52, 134 52, 140 82" stroke="#ffffff" stroke-width="2.5" opacity="0.95"/>
+          <!-- 4-Petal Clover Photoprotein Gonadal Ring (Ruby & Gold) -->
+          <ellipse cx="88" cy="66" rx="8" ry="6" fill="#f43f5e" opacity="0.9"/>
+          <ellipse cx="112" cy="66" rx="8" ry="6" fill="#f43f5e" opacity="0.9"/>
+          <ellipse cx="88" cy="78" rx="8" ry="6" fill="#f43f5e" opacity="0.9"/>
+          <ellipse cx="112" cy="78" rx="8" ry="6" fill="#f43f5e" opacity="0.9"/>
+          <circle cx="100" cy="72" r="4.5" fill="#fef08a"/>
+          <!-- Oral Arms & Tentacles Group -->
+          <g class="tentacle-flow">
+            <!-- Center Ruffled Oral Arms (Vibrant Rose/Lavender Frills) -->
+            <path d="M88 95 C82 120, 108 140, 94 168 C88 185, 96 195, 92 205" stroke="#f472b6" stroke-width="4.5" stroke-linecap="round"/>
+            <path d="M112 95 C118 120, 92 140, 106 168 C112 185, 104 195, 108 205" stroke="#f472b6" stroke-width="4.5" stroke-linecap="round"/>
+            <!-- Outer Multi-Colored Bioluminescent Filament Tentacles -->
+            <path d="M52 94 C44 120, 58 145, 50 175 C44 195, 52 205, 46 215" stroke="#00f2fe" stroke-width="2.5" stroke-dasharray="3 2" stroke-linecap="round"/>
+            <path d="M70 95 C64 125, 78 150, 72 180 C66 200, 72 210, 68 220" stroke="#a855f7" stroke-width="2.2" stroke-dasharray="2 2" stroke-linecap="round"/>
+            <path d="M130 95 C136 125, 122 150, 128 180 C134 200, 128 210, 132 220" stroke="#a855f7" stroke-width="2.2" stroke-dasharray="2 2" stroke-linecap="round"/>
+            <path d="M148 94 C156 120, 142 145, 150 175 C156 195, 148 205, 154 215" stroke="#ec4899" stroke-width="2.5" stroke-dasharray="3 2" stroke-linecap="round"/>
+          </g>
+        </svg>`
+      }
+    };
+
+    function updateDossierView(key) {
+      const data = CREATURES_DATA[key];
+      if (!data) return;
+
+      currentDossierIndex = CREATURE_KEYS.indexOf(key);
+
+      // Update Specimen Chamber
+      document.getElementById('dossier-specimen-id').textContent = data.specimenId;
+      document.getElementById('chamber-viewport').innerHTML = data.svg;
+      document.getElementById('chamber-hud-status').textContent = data.hudStatus;
+      document.getElementById('chamber-hud-depth').textContent = data.hudDepth;
+
+      // Update Biological Dossier details
+      document.getElementById('dossier-title').textContent = data.name;
+      document.getElementById('dossier-role').textContent = data.role;
+      document.getElementById('dossier-latin').textContent = data.latin;
+
+      document.getElementById('dossier-size').textContent = data.size;
+      document.getElementById('dossier-speed').textContent = data.speed;
+      document.getElementById('dossier-diet').textContent = data.diet;
+      document.getElementById('dossier-lifespan').textContent = data.lifespan;
+
+      document.getElementById('dossier-adaptation').textContent = data.adaptation;
+      document.getElementById('dossier-eco').textContent = data.eco;
+      document.getElementById('dossier-fact').textContent = data.fact;
+
+      // Update Telemetry metric bars
+      document.getElementById('bar-speed').style.width = data.metrics.speed + '%';
+      document.getElementById('val-speed').textContent = data.metrics.speed + '%';
+
+      document.getElementById('bar-depth').style.width = data.metrics.depth + '%';
+      document.getElementById('val-depth').textContent = data.metrics.depth + '%';
+
+      document.getElementById('bar-stealth').style.width = data.metrics.stealth + '%';
+      document.getElementById('val-stealth').textContent = data.metrics.stealth + '%';
+
+      document.getElementById('bar-sensory').style.width = data.metrics.sensory + '%';
+      document.getElementById('val-sensory').textContent = data.metrics.sensory + '%';
+
+      // Update Tabs active state
+      const tabBtns = document.querySelectorAll('.dossier-tab-btn[data-key]');
+      tabBtns.forEach(btn => {
+        if (btn.getAttribute('data-key') === key) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Update footer index
+      const footerIdx = document.getElementById('dossier-footer-index');
+      if (footerIdx) {
+        footerIdx.textContent = `${currentDossierIndex + 1} / ${CREATURE_KEYS.length}`;
+      }
+    }
+
+    function openCreatureDossier(key) {
+      updateDossierView(key);
+      const modal = document.getElementById('creature-dossier-modal');
+      if (modal) {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeCreatureDossier(event) {
+      if (event && event.target !== event.currentTarget) return;
+      const modal = document.getElementById('creature-dossier-modal');
+      if (modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function switchDossierCreature(key) {
+      updateDossierView(key);
+    }
+
+    function navigateDossier(delta) {
+      currentDossierIndex = (currentDossierIndex + delta + CREATURE_KEYS.length) % CREATURE_KEYS.length;
+      updateDossierView(CREATURE_KEYS[currentDossierIndex]);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeCreatureDossier();
+        closeModal();
+      } else if (e.key === 'ArrowRight' && document.getElementById('creature-dossier-modal').classList.contains('show')) {
+        navigateDossier(1);
+      } else if (e.key === 'ArrowLeft' && document.getElementById('creature-dossier-modal').classList.contains('show')) {
+        navigateDossier(-1);
+      }
+    });
+  </script>
+</body>
+</html>

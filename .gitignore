@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+
+# Raw/Temp extract files
+ezgif-4379fb261fd8eaef-jpg/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+*.log
