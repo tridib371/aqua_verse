@@ -350,27 +350,54 @@
       position: relative;
     }
 
-    /* Hero Section: Elevated into the open sky area so island palm trees remain fully visible */
+    /* Hero Section: Heading above trees in the sky; Description & button below trees in the water */
     #section-hero {
-      align-items: flex-start;
-      padding-top: clamp(80px, 9.5vh, 115px);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: clamp(75px, 9vh, 95px) 24px clamp(35px, 6vh, 65px);
+      box-sizing: border-box;
     }
 
-    #section-hero .content-box {
-      margin-top: 0;
+    .hero-content-box {
+      width: 100%;
+      max-width: 950px;
+      margin: 0 auto;
+      min-height: calc(100vh - clamp(110px, 15vh, 160px));
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
     }
 
-    #section-hero .section-tag {
+    .hero-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-top .section-tag {
       margin-bottom: 12px;
     }
 
-    #section-hero .section-title {
-      margin-bottom: 14px;
+    .hero-top .section-title {
+      margin-bottom: 0;
     }
 
-    #section-hero .section-desc {
-      margin-bottom: 22px;
-      padding: 8px 24px;
+    .hero-bottom {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: auto;
+      padding-top: clamp(80px, 18vh, 180px); /* Leaves middle island palm trees completely visible */
+    }
+
+    .hero-bottom .section-desc {
+      margin-bottom: 16px;
+      padding: 10px 24px;
     }
 
     .content-box {
@@ -1116,7 +1143,14 @@
         padding: 80px 20px;
       }
       #section-hero {
-        padding-top: 74px;
+        padding-top: 72px;
+        padding-bottom: 30px;
+      }
+      .hero-content-box {
+        min-height: calc(100vh - 102px);
+      }
+      .hero-bottom {
+        padding-top: clamp(40px, 10vh, 80px);
       }
       .creature-row {
         gap: 16px;
@@ -1194,14 +1228,18 @@
 
     <!-- 1. HERO — "ENTER THE BLUE" -->
     <section class="section-stage" id="section-hero">
-      <div class="content-box active">
-        <span class="section-tag">Prologue &bull; Depth 0m</span>
-        <h1 class="section-title">ENTER THE BLUE</h1>
-        <p class="section-desc">Dive beneath the surface and discover a world hidden beneath the waves.</p>
-        <button class="btn-primary" onclick="startExperience()">
-          <span>Start Exploring</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
-        </button>
+      <div class="content-box active hero-content-box">
+        <div class="hero-top">
+          <span class="section-tag">Prologue &bull; Depth 0m</span>
+          <h1 class="section-title">ENTER THE BLUE</h1>
+        </div>
+        <div class="hero-bottom">
+          <p class="section-desc">Dive beneath the surface and discover a world hidden beneath the waves.</p>
+          <button class="btn-primary" onclick="startExperience()">
+            <span>Start Exploring</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+          </button>
+        </div>
       </div>
     </section>
 
