@@ -1102,19 +1102,22 @@
     }
 
     /* Modal for Action */
+    /* CONSERVATION PLEDGE MODAL - CINEMATIC GORGEOUS AESTHETIC */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(2, 6, 16, 0.85);
-      backdrop-filter: blur(20px);
-      z-index: 100;
+      background: rgba(1, 6, 16, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 2000;
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s ease;
-      padding: 24px;
+      transition: opacity 0.35s ease;
+      padding: 20px;
+      overscroll-behavior: contain;
     }
 
     .modal-backdrop.show {
@@ -1122,30 +1125,260 @@
       pointer-events: auto;
     }
 
-    .modal-dialog {
-      background: radial-gradient(circle at 50% 0%, #0c233f 0%, #040d1a 100%);
-      border: 1px solid rgba(0, 242, 254, 0.3);
+    .pledge-dialog {
+      background: radial-gradient(ellipse at 50% 0%, #0d2f54 0%, #031122 65%, #01060e 100%);
+      border: 1px solid rgba(0, 242, 254, 0.4);
       border-radius: 24px;
-      padding: 44px;
-      max-width: 520px;
+      padding: 34px 30px 28px;
+      max-width: 540px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 242, 254, 0.3);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95), 0 0 50px rgba(0, 242, 254, 0.25), inset 0 0 40px rgba(0, 242, 254, 0.08);
+      transform: scale(0.94) translateY(20px);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      overscroll-behavior: contain;
     }
 
-    .modal-title {
+    .modal-backdrop.show .pledge-dialog {
+      transform: scale(1) translateY(0);
+    }
+
+    .pledge-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.3rem;
+      transition: all 0.2s ease;
+      line-height: 1;
+    }
+
+    .pledge-close-btn:hover {
+      color: #ffffff;
+      background: rgba(0, 242, 254, 0.2);
+      border-color: #00f2fe;
+      transform: rotate(90deg);
+    }
+
+    /* Animated Holographic Emblem */
+    .pledge-emblem-wrap {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pledge-pulse-ring {
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(0, 242, 254, 0.5);
+      animation: pledgePulse 3s ease-out infinite;
+      pointer-events: none;
+    }
+
+    .pledge-rotating-ring {
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(52, 211, 153, 0.6);
+      animation: pledgeRotate 14s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pledgeRotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pledgePulse {
+      0% { transform: scale(0.85); opacity: 0.8; }
+      50% { transform: scale(1.22); opacity: 0.15; }
+      100% { transform: scale(0.85); opacity: 0.8; }
+    }
+
+    .pledge-core-orb {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 35% 30%, #00f2fe 0%, #0369a1 70%, #082f49 100%);
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.65), inset 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+
+    .pledge-tag {
+      display: inline-block;
+      font-family: monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      padding: 4px 14px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+    }
+
+    .pledge-title {
       font-family: 'Cinzel', serif;
-      font-size: 1.9rem;
-      color: #fff;
-      margin-bottom: 14px;
-      text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+      font-size: clamp(1.5rem, 2.8vw, 1.95rem);
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #ffffff 20%, #38bdf8 60%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 20px rgba(0, 242, 254, 0.4));
     }
 
-    .modal-text {
+    .pledge-text {
       color: #cbd5e1;
-      font-size: 1.05rem;
-      line-height: 1.7;
-      margin-bottom: 30px;
+      font-size: 0.94rem;
+      line-height: 1.65;
+      margin-bottom: 20px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    /* 3 Action Pillars */
+    .pledge-pillars {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .pledge-pillar-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      background: rgba(3, 14, 33, 0.55);
+      border: 1px solid rgba(0, 242, 254, 0.2);
+      border-radius: 12px;
+      transition: all 0.25s ease;
+    }
+
+    .pledge-pillar-card:hover {
+      background: rgba(0, 242, 254, 0.1);
+      border-color: rgba(0, 242, 254, 0.5);
+      transform: translateX(4px);
+    }
+
+    .pillar-badge {
+      font-size: 1.3rem;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 242, 254, 0.1);
+      border-radius: 10px;
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      flex-shrink: 0;
+    }
+
+    .pillar-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pillar-details strong {
+      font-size: 0.84rem;
+      color: #f1f5f9;
+      letter-spacing: 0.03em;
+    }
+
+    .pillar-details span {
+      font-size: 0.74rem;
+      color: #94a3b8;
+      line-height: 1.35;
+    }
+
+    /* Gorgeous Animated Action Button */
+    .btn-pledge-action {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 34px;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #ffffff;
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.25) 0%, rgba(52, 211, 153, 0.3) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.7);
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 25px rgba(52, 211, 153, 0.35);
+      text-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+    }
+
+    .btn-pledge-action:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.4) 0%, rgba(52, 211, 153, 0.45) 100%);
+      border-color: #34d399;
+      box-shadow: 0 6px 28px rgba(0, 0, 0, 0.8), 0 0 35px rgba(52, 211, 153, 0.6);
+    }
+
+    .btn-pledge-action .btn-shine {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transform: skewX(-25deg);
+      animation: btnShineSweep 3.5s infinite;
+    }
+
+    @keyframes btnShineSweep {
+      0% { left: -100%; }
+      30%, 100% { left: 200%; }
+    }
+
+    .btn-pledge-action .btn-content {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Success / Recorded State */
+    .btn-pledge-action.recorded {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      border-color: #34d399;
+      color: #ffffff;
+      box-shadow: 0 0 35px rgba(52, 211, 153, 0.85);
+      transform: scale(1.03);
     }
 
     @media (max-width: 768px) {
@@ -1495,14 +1728,83 @@
 
   <!-- Conservation Pledge Modal -->
   <div class="modal-backdrop" id="pledge-modal" onclick="closeModal(event)">
-    <div class="modal-dialog" onclick="event.stopPropagation()">
-      <div style="font-size:3rem; margin-bottom:12px;">&#127754;</div>
-      <h3 class="modal-title">PROTECT THE BLUE</h3>
-      <p class="modal-text">
+    <div class="modal-dialog pledge-dialog" onclick="event.stopPropagation()">
+      <!-- Close Button -->
+      <button class="pledge-close-btn" onclick="closeModal()" title="Close Pledge">&times;</button>
+
+      <!-- Animated Holographic Ocean Emblem -->
+      <div class="pledge-emblem-wrap">
+        <div class="pledge-pulse-ring"></div>
+        <div class="pledge-rotating-ring"></div>
+        <div class="pledge-core-orb">
+          <svg viewBox="0 0 64 64" width="46" height="46" fill="none">
+            <defs>
+              <linearGradient id="pledge-core-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00f2fe"/>
+                <stop offset="50%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0f172a"/>
+              </linearGradient>
+              <linearGradient id="pledge-wave-grad" x1="0" y1="0" x2="64" y2="0" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="100%" stop-color="#34d399"/>
+              </linearGradient>
+            </defs>
+            <circle cx="32" cy="32" r="26" fill="url(#pledge-core-grad)"/>
+            <!-- Pulsing water wave crests -->
+            <path d="M12 34 C18 28, 24 40, 32 34 C40 28, 46 40, 52 34" stroke="url(#pledge-wave-grad)" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M15 42 C20 38, 26 46, 32 42 C38 38, 44 46, 49 42" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+            <path d="M18 26 C22 22, 27 30, 32 26 C37 22, 42 30, 46 26" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" opacity="0.9"/>
+            <circle cx="24" cy="20" r="1.8" fill="#ffffff" opacity="0.8"/>
+            <circle cx="42" cy="18" r="1.4" fill="#00f2fe" opacity="0.75"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Telemetry Tag -->
+      <span class="pledge-tag">Global Oceanic Accord &bull; 2026</span>
+
+      <!-- Title -->
+      <h3 class="modal-title pledge-title">PROTECT THE BLUE</h3>
+
+      <!-- Core Statement -->
+      <p class="modal-text pledge-text">
         Thank you for pledging to protect our oceans. Every conscious action to reduce plastic and safeguard marine habitats helps preserve our blue planet.
       </p>
-      <button class="btn-primary" onclick="closeModal()">
-        <span>Honor The Pledge</span>
+
+      <!-- 3 Visual Pledge Commitment Pillars -->
+      <div class="pledge-pillars">
+        <div class="pledge-pillar-card">
+          <div class="pillar-badge">🌊</div>
+          <div class="pillar-details">
+            <strong>Zero Single-Use Plastic</strong>
+            <span>Keep synthetic waste out of pelagic currents and reefs</span>
+          </div>
+        </div>
+        <div class="pledge-pillar-card">
+          <div class="pillar-badge">🐢</div>
+          <div class="pillar-details">
+            <strong>Sanctuary Defense</strong>
+            <span>Safeguard vital seagrass beds and marine biodiversity</span>
+          </div>
+        </div>
+        <div class="pledge-pillar-card">
+          <div class="pillar-badge">⚡</div>
+          <div class="pillar-details">
+            <strong>Carbon Mitigation</strong>
+            <span>Counteract ocean acidification to protect shellbuilders</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gorgeous Animated Action Button -->
+      <button class="btn-pledge-action" id="pledge-confirm-btn" onclick="honorPledgeAction()">
+        <span class="btn-shine"></span>
+        <span class="btn-content">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span id="pledge-btn-label">Honor The Pledge</span>
+        </span>
       </button>
     </div>
   </div>
@@ -1947,6 +2249,25 @@
       if (!document.getElementById('creature-dossier-modal').classList.contains('show')) {
         document.documentElement.classList.remove('modal-open');
         document.body.classList.remove('modal-open');
+      }
+    }
+
+    function honorPledgeAction() {
+      const btn = document.getElementById('pledge-confirm-btn');
+      const label = document.getElementById('pledge-btn-label');
+      if (btn && label) {
+        btn.classList.add('recorded');
+        label.innerHTML = '&#10003; Pledge Honored!';
+        
+        setTimeout(() => {
+          closeModal();
+          setTimeout(() => {
+            btn.classList.remove('recorded');
+            label.innerHTML = 'Honor The Pledge';
+          }, 400);
+        }, 850);
+      } else {
+        closeModal();
       }
     }
 
