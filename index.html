@@ -38,6 +38,13 @@
       position: relative;
     }
 
+    /* Modal open state: completely locks background window scroll */
+    html.modal-open,
+    body.modal-open {
+      overflow: hidden !important;
+      overscroll-behavior: none !important;
+    }
+
     /* Fixed full-screen 3D video sequence canvas */
     #canvas-container {
       position: fixed;
@@ -663,6 +670,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s ease;
+      overscroll-behavior: contain;
     }
 
     .dossier-modal-backdrop.show {
@@ -683,6 +691,7 @@
       overflow: hidden;
       transform: scale(0.95) translateY(15px);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overscroll-behavior: contain;
     }
 
     .dossier-modal-backdrop.show .dossier-modal-dialog {
@@ -760,9 +769,30 @@
       display: grid;
       grid-template-columns: 340px 1fr;
       overflow-y: auto;
+      overscroll-behavior: contain;
       flex: 1;
       padding: 24px;
       gap: 28px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(0, 242, 254, 0.4) rgba(3, 14, 33, 0.4);
+    }
+
+    .dossier-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .dossier-body::-webkit-scrollbar-track {
+      background: rgba(3, 14, 33, 0.4);
+      border-radius: 999px;
+    }
+
+    .dossier-body::-webkit-scrollbar-thumb {
+      background: rgba(0, 242, 254, 0.35);
+      border-radius: 999px;
+    }
+
+    .dossier-body::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 242, 254, 0.7);
     }
 
     @media (max-width: 820px) {
@@ -1687,6 +1717,9 @@
       };
 
       const onScroll = () => {
+        // Freeze scroll tracking while modal is active
+        if (document.documentElement.classList.contains('modal-open')) return;
+
         const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
         const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
         const fraction = Math.min(Math.max(scrollY / maxScroll, 0), 1);
@@ -1905,10 +1938,16 @@
 
     function openModal() {
       document.getElementById('pledge-modal').classList.add('show');
+      document.documentElement.classList.add('modal-open');
+      document.body.classList.add('modal-open');
     }
 
     function closeModal() {
       document.getElementById('pledge-modal').classList.remove('show');
+      if (!document.getElementById('creature-dossier-modal').classList.contains('show')) {
+        document.documentElement.classList.remove('modal-open');
+        document.body.classList.remove('modal-open');
+      }
     }
 
     // ==========================================
@@ -2238,7 +2277,8 @@
       const modal = document.getElementById('creature-dossier-modal');
       if (modal) {
         modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
+        document.documentElement.classList.add('modal-open');
+        document.body.classList.add('modal-open');
       }
     }
 
@@ -2247,7 +2287,10 @@
       const modal = document.getElementById('creature-dossier-modal');
       if (modal) {
         modal.classList.remove('show');
-        document.body.style.overflow = '';
+        if (!document.getElementById('pledge-modal').classList.contains('show')) {
+          document.documentElement.classList.remove('modal-open');
+          document.body.classList.remove('modal-open');
+        }
       }
     }
 
@@ -2259,6 +2302,35 @@
       currentDossierIndex = (currentDossierIndex + delta + CREATURE_KEYS.length) % CREATURE_KEYS.length;
       updateDossierView(CREATURE_KEYS[currentDossierIndex]);
     }
+
+    // Modal Scroll Isolation: Prevent scroll chaining to the background page
+    const isolateModalScroll = (modalEl) => {
+      if (!modalEl) return;
+      modalEl.addEventListener('wheel', (e) => {
+        const scrollable = e.target.closest('.dossier-body, .modal-dialog');
+        if (!scrollable) {
+          e.preventDefault();
+          return;
+        }
+        const { scrollTop, scrollHeight, clientHeight } = scrollable;
+        const delta = e.deltaY;
+        const atTop = delta < 0 && scrollTop <= 0;
+        const atBottom = delta > 0 && scrollTop + clientHeight >= scrollHeight - 1;
+        if (atTop || atBottom) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      modalEl.addEventListener('touchmove', (e) => {
+        const scrollable = e.target.closest('.dossier-body, .modal-dialog');
+        if (!scrollable) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+    };
+
+    isolateModalScroll(document.getElementById('creature-dossier-modal'));
+    isolateModalScroll(document.getElementById('pledge-modal'));
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
