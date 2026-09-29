@@ -426,26 +426,48 @@
     .btn-primary {
       display: inline-flex;
       align-items: center;
-      gap: 12px;
-      padding: 16px 40px;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px 26px;
       border-radius: 9999px;
-      font-size: 1rem;
+      font-size: 0.88rem;
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #030814;
-      background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 100%);
-      border: none;
+      color: #00f2fe;
+      background: rgba(3, 14, 33, 0.55);
+      border: 1px solid rgba(0, 242, 254, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       cursor: pointer;
       text-decoration: none;
-      box-shadow: 0 0 35px rgba(0, 242, 254, 0.6), 0 10px 25px rgba(0, 0, 0, 0.7);
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.7);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(0, 242, 254, 0.12), 0 0 20px rgba(0, 242, 254, 0.2);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .btn-primary:hover {
-      transform: translateY(-3px) scale(1.04);
-      box-shadow: 0 0 55px rgba(0, 242, 254, 0.9), 0 15px 35px rgba(0, 0, 0, 0.8);
-      background: linear-gradient(135deg, #38bdf8 0%, #00f2fe 100%);
+      transform: translateY(-2px);
+      background: rgba(0, 242, 254, 0.22);
+      border-color: #00f2fe;
+      color: #ffffff;
+      text-shadow: 0 0 14px rgba(0, 242, 254, 0.9);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.8), inset 0 0 16px rgba(0, 242, 254, 0.25), 0 0 32px rgba(0, 242, 254, 0.5);
+    }
+
+    .btn-primary.btn-conservation {
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.55);
+      text-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(52, 211, 153, 0.12), 0 0 20px rgba(52, 211, 153, 0.2);
+    }
+
+    .btn-primary.btn-conservation:hover {
+      background: rgba(52, 211, 153, 0.22);
+      border-color: #34d399;
+      color: #ffffff;
+      text-shadow: 0 0 14px rgba(52, 211, 153, 0.9);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.8), inset 0 0 16px rgba(52, 211, 153, 0.25), 0 0 32px rgba(52, 211, 153, 0.5);
     }
 
     /* Section 4: Ocean Life (Pure Direct Text Layout) */
@@ -1152,7 +1174,7 @@
         <p class="section-desc">Dive beneath the surface and discover a world hidden beneath the waves.</p>
         <button class="btn-primary" onclick="startExperience()">
           <span>Start Exploring</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
         </button>
       </div>
     </section>
@@ -1353,9 +1375,9 @@
         <p class="section-desc">
           Healthy oceans are essential for life on Earth. Reducing plastic pollution, protecting marine habitats, and using ocean resources responsibly can help preserve this incredible world.
         </p>
-        <button class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);" onclick="openModal()">
+        <button class="btn-primary btn-conservation" onclick="openModal()">
           <span>Protect The Blue</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         </button>
       </div>
     </section>
@@ -1370,7 +1392,7 @@
         </p>
         <button class="btn-primary" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
           <span>Explore Again</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
         </button>
       </div>
     </section>
