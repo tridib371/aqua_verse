@@ -1,6 +1,9 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "installCommand": "echo 'No dependencies needed'",
+  "buildCommand": "echo 'Static assets ready'",
+  "outputDirectory": ".",
   "headers": [
     {
       "source": "/all-frames/(.*)",
