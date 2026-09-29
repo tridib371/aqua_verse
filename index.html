@@ -754,14 +754,7 @@
       0% { transform: rotate(-10deg); }
       100% { transform: rotate(10deg); }
     }
-    .anemone-tentacles path {
-      animation: anemoneSway 3s ease-in-out infinite alternate;
-      transform-origin: bottom center;
-    }
-    @keyframes anemoneSway {
-      0% { transform: rotate(-6deg); }
-      100% { transform: rotate(6deg); }
-    }
+
 
     .anim-turtle {
       animation: turtleGlide 5s ease-in-out infinite alternate;
@@ -1844,17 +1837,12 @@
         hudStatus: 'SYMBIOSIS: NOMINAL',
         hudDepth: 'DEPTH: 12M // TROPIC',
         svg: `<svg viewBox="0 0 200 160" width="220" height="170" class="anim-clownfish" fill="none">
-          <g class="anemone-tentacles" stroke="#f472b6" stroke-width="4" opacity="0.65" stroke-linecap="round">
-            <path d="M35 150 C25 110, 45 80, 30 40" />
-            <path d="M50 150 C45 100, 70 70, 55 30" />
-            <path d="M68 150 C78 110, 62 75, 78 45" />
-            <path d="M88 150 C95 105, 118 70, 102 35" />
-            <path d="M105 150 C112 115, 130 85, 120 50" />
-          </g>
-          <!-- Floating Bubbles -->
-          <circle cx="28" cy="70" r="3" fill="#00f2fe" opacity="0.7"/>
-          <circle cx="20" cy="50" r="2" fill="#00f2fe" opacity="0.6"/>
-          <circle cx="24" cy="30" r="1.5" fill="#ffffff" opacity="0.8"/>
+          <!-- Floating Ambient Bubbles -->
+          <circle cx="28" cy="70" r="3.5" fill="#00f2fe" opacity="0.75"/>
+          <circle cx="20" cy="50" r="2.5" fill="#00f2fe" opacity="0.65"/>
+          <circle cx="24" cy="30" r="2" fill="#ffffff" opacity="0.85"/>
+          <circle cx="175" cy="50" r="2.5" fill="#00f2fe" opacity="0.7"/>
+          <circle cx="185" cy="110" r="3" fill="#38bdf8" opacity="0.6"/>
           <!-- Fish Body -->
           <g fill="#ff7a18" stroke="#000000" stroke-width="1.8">
             <path d="M140 80 C155 60, 175 55, 185 65 C175 80, 175 80, 185 95 C175 105, 155 100, 140 80 Z" class="tail" fill="#ff6b00"/>
@@ -1887,13 +1875,10 @@
         hudStatus: 'GEOMAGNETIC LOCK',
         hudDepth: 'DEPTH: 140M // CRUISE',
         svg: `<svg viewBox="0 0 200 180" width="220" height="180" class="anim-turtle" fill="none">
-          <!-- Drifting Emerald Seagrass in Background -->
-          <g class="anemone-tentacles" stroke="#059669" stroke-width="3.5" opacity="0.55" stroke-linecap="round">
-            <path d="M22 170 C14 130, 32 90, 18 40" />
-            <path d="M36 170 C28 110, 48 75, 36 30" />
-            <path d="M176 170 C186 125, 162 85, 176 35" stroke="#10b981"/>
-            <path d="M190 170 C198 115, 180 70, 192 25" stroke="#10b981"/>
-          </g>
+          <!-- Floating Ambient Bubbles -->
+          <circle cx="28" cy="50" r="3" fill="#34d399" opacity="0.7"/>
+          <circle cx="178" cy="130" r="2.5" fill="#00f2fe" opacity="0.6"/>
+          <circle cx="185" cy="40" r="3" fill="#ffffff" opacity="0.8"/>
           <!-- Left Front Flipper (Mottled Sea Green with Golden Edges) -->
           <path d="M72 72 C32 52, 10 70, 16 92 C36 92, 64 84, 70 88" class="flipper-l" fill="#059669" stroke="#047857" stroke-width="2"/>
           <path d="M42 68 C30 75, 24 85, 30 88" stroke="#34d399" stroke-width="2.2" stroke-linecap="round"/>
@@ -1988,8 +1973,10 @@
         hudStatus: 'ELECTRO-RECEPTION LOCK',
         hudDepth: 'DEPTH: 850M // TWILIGHT',
         svg: `<svg viewBox="0 0 240 160" width="240" height="160" class="anim-shark" fill="none">
-          <!-- Sunlight Caustics Piercing from Surface -->
-          <path d="M55 0 L35 160 M115 0 L85 160 M175 0 L145 160" stroke="rgba(255,255,255,0.18)" stroke-width="8" stroke-linecap="round"/>
+          <!-- Floating Ambient Bubbles -->
+          <circle cx="28" cy="35" r="3" fill="#38bdf8" opacity="0.6"/>
+          <circle cx="195" cy="130" r="2.5" fill="#00f2fe" opacity="0.55"/>
+          <circle cx="215" cy="40" r="2" fill="#ffffff" opacity="0.8"/>
           <!-- Slate Steel Blue-Grey Dorsal Body -->
           <path d="M22 88 C48 65, 92 62, 118 66 L130 32 C136 42, 142 56, 150 66 C176 70, 192 74, 204 56 C192 84, 192 92, 204 110 C188 96, 170 96, 144 96 L138 114 C132 108, 126 98, 120 98 C90 98, 62 104, 38 112 L44 96 C32 96, 26 92, 22 88 Z" fill="#475569" stroke="#1e293b" stroke-width="2.5"/>
           <!-- Darkened Fin Tips -->
