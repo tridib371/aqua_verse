@@ -386,14 +386,26 @@
 
     .section-title {
       font-family: 'Cinzel', serif;
-      font-size: clamp(2.4rem, 6vw, 4.8rem);
       font-weight: 900;
-      letter-spacing: 0.08em;
       text-transform: uppercase;
-      line-height: 1.15;
-      margin-bottom: 24px;
       color: #ffffff;
       text-shadow: 0 4px 30px rgba(0, 0, 0, 1), 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 45px rgba(0, 242, 254, 0.45);
+    }
+
+    /* Hero entrance title - left unchanged */
+    h1.section-title {
+      font-size: clamp(2.4rem, 6vw, 4.8rem);
+      letter-spacing: 0.08em;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    /* Sub-section headings - tuned to a balanced, perfect size */
+    h2.section-title {
+      font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+      letter-spacing: 0.07em;
+      line-height: 1.25;
+      margin-bottom: 20px;
     }
 
     .section-desc {
