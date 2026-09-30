@@ -2192,33 +2192,12 @@
       };
 
       window.startExperience = () => {
-        // Unlock audio on Start Exploring click if not already playing
-        if (!isPlaying) {
-          audioElement.play().then(() => {
-            isPlaying = true;
-            audioToggle.classList.add('playing');
-            audioToggle.title = 'Mute Sound';
-          }).catch(() => {});
-        }
         scrollToSection('section-journey');
       };
 
       if (audioToggle) {
         audioToggle.addEventListener('click', toggleSound);
       }
-
-      // Auto-unlock audio on first user click anywhere on page
-      const firstInteractionUnlock = () => {
-        if (!isPlaying) {
-          audioElement.play().then(() => {
-            isPlaying = true;
-            audioToggle.classList.add('playing');
-            audioToggle.title = 'Mute Sound';
-          }).catch(() => {});
-        }
-        window.removeEventListener('click', firstInteractionUnlock);
-      };
-      window.addEventListener('click', firstInteractionUnlock, { once: true });
 
       window.addEventListener('resize', resizeCanvas, { passive: true });
       window.addEventListener('scroll', onScroll, { passive: true });
