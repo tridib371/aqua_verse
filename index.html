@@ -1096,9 +1096,53 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
       padding: 14px 24px;
       border-top: 1px solid rgba(0, 242, 254, 0.2);
       background: rgba(2, 8, 20, 0.7);
+    }
+
+    .dossier-nav-btn {
+      background: rgba(0, 242, 254, 0.08);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: #94a3b8;
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .dossier-nav-btn:hover {
+      color: #ffffff;
+      border-color: #00f2fe;
+      background: rgba(0, 242, 254, 0.2);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);
+    }
+
+    .dossier-index-badge {
+      font-family: monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #00f2fe;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      border-radius: 999px;
+      padding: 4px 14px;
+      white-space: nowrap !important;
+      flex-shrink: 0;
+      text-align: center;
+      letter-spacing: 0.08em;
+      box-shadow: inset 0 0 8px rgba(0, 242, 254, 0.15);
+      line-height: 1.4;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 52px;
     }
 
     /* Modal for Action */
@@ -1596,10 +1640,20 @@
       }
       .dossier-footer {
         padding: 10px 12px;
+        gap: 8px;
       }
       .dossier-nav-btn {
         padding: 6px 12px;
         font-size: 0.74rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .dossier-index-badge {
+        padding: 3px 10px;
+        font-size: 0.76rem;
+        white-space: nowrap !important;
+        flex-shrink: 0;
+        min-width: 46px;
       }
 
       /* Conservation Pledge Modal on Mobile */
@@ -1672,6 +1726,15 @@
       }
       .depth-hud .depth-sep {
         display: none;
+      }
+      .dossier-nav-btn {
+        padding: 5px 8px;
+        font-size: 0.68rem;
+      }
+      .dossier-index-badge {
+        padding: 3px 6px;
+        font-size: 0.72rem;
+        min-width: 42px;
       }
     }
   </style>
@@ -2170,11 +2233,11 @@
 
       <!-- Footer with Prev/Next controls -->
       <div class="dossier-footer">
-        <button class="dossier-tab-btn" onclick="navigateDossier(-1)">
+        <button class="dossier-nav-btn" onclick="navigateDossier(-1)">
           &larr; Prev Specimen
         </button>
-        <span style="font-family:monospace; font-size:0.75rem; color:#94a3b8;" id="dossier-footer-index">1 / 5</span>
-        <button class="dossier-tab-btn" onclick="navigateDossier(1)">
+        <span class="dossier-index-badge" id="dossier-footer-index">1 / 5</span>
+        <button class="dossier-nav-btn" onclick="navigateDossier(1)">
           Next Specimen &rarr;
         </button>
       </div>
